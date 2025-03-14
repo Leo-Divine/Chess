@@ -1,0 +1,8 @@
+[package]
+name = "chess_game"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+grid = "0.16.1"
+iced = "0.13.1"
