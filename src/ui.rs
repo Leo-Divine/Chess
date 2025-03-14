@@ -1,12 +1,10 @@
+use crate::Message;
 use iced::{
     widget::{container, mouse_area, Column, Container, Row},
     Element, Point,
 };
-use crate::Message;
 
-struct Board {
-    
-}
+struct Board {}
 
 //Check with clover to see if an easier method exists
 impl Board {
