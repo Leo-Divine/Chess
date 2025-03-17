@@ -7,12 +7,10 @@ use grid::{Board, Grid};
 mod ui;
 mod grid;
 
-fn main() {
+fn main() -> iced::Result {
     let grid: Board = Arc::new(Mutex::new(Grid::new()));
-    
-    let ui:UI = UI::new(Arc::clone(&grid));
-    assert_eq!(ui.board.lock().unwrap()[(0, 0)], grid.lock().unwrap()[(0, 0)]);
-    iced::run("Chess", UI::update, UI::view);
+    println!("{:?}", grid.lock().unwrap()[(0, 0)]);
+    iced::application("Chess", UI::update, UI::view).run()
 }
 
 #[derive(Debug, Clone)]

@@ -58,9 +58,7 @@ impl Default for Grid {
 
 impl Grid {
     pub fn new() -> Self {
-        Self {
-            items: Default::default(),
-        }
+        Default::default()
     }
 
     fn get_index(col: usize, row: usize) -> usize {
