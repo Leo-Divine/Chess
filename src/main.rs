@@ -1,11 +1,11 @@
 use std::sync::{Arc, Mutex};
 
+use grid::{Board, Grid};
 use iced::Point;
 use ui::UI;
-use grid::{Board, Grid};
 
-mod ui;
 mod grid;
+mod ui;
 
 fn main() -> iced::Result {
     let grid: Board = Arc::new(Mutex::new(Grid::new()));

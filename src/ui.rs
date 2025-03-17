@@ -42,23 +42,35 @@ impl UI {
             let mut even_row = Row::new();
             for r in 0..4 {
                 let black_container: Container<'_, Message> =
-                    container(svg(format!("src/pieces/{:?}.svg", handle[(r * 2, c * 2)]))).width(100).height(100).style(container::dark);
-                let white_container: Container<'_, Message> = container(svg(format!("src/pieces/{:?}.svg", handle[(r * 2 + 1, c * 2)]))).width(100).height(100);
+                    container(svg(format!("src/pieces/{:?}.svg", handle[(r * 2, c * 2)])))
+                        .width(100)
+                        .height(100)
+                        .style(container::dark);
+                let white_container: Container<'_, Message> = container(svg(format!(
+                    "src/pieces/{:?}.svg",
+                    handle[(r * 2 + 1, c * 2)]
+                )))
+                .width(100)
+                .height(100);
                 odd_row = odd_row.push(black_container);
                 odd_row = odd_row.push(white_container);
             }
             board = board.push(odd_row);
 
             for r in 0..4 {
-                let white_container: Container<'_, Message> =
-                    container(svg(format!("src/pieces/{:?}.svg", handle[(r * 2, c * 2 + 1)])))
-                        .width(100)
-                        .height(100);
-                let black_container: Container<'_, Message> =
-                    container(svg(format!("src/pieces/{:?}.svg", handle[(r * 2 + 1, c * 2 + 1)])))
-                        .width(100)
-                        .height(100)
-                        .style(container::dark);
+                let white_container: Container<'_, Message> = container(svg(format!(
+                    "src/pieces/{:?}.svg",
+                    handle[(r * 2, c * 2 + 1)]
+                )))
+                .width(100)
+                .height(100);
+                let black_container: Container<'_, Message> = container(svg(format!(
+                    "src/pieces/{:?}.svg",
+                    handle[(r * 2 + 1, c * 2 + 1)]
+                )))
+                .width(100)
+                .height(100)
+                .style(container::dark);
                 even_row = even_row.push(white_container);
                 even_row = even_row.push(black_container);
             }
