@@ -50,10 +50,6 @@ impl Grid {
         self[new_position] = self[old_position].clone();
         self[old_position] = Pieces::None;
     }
-
-    fn get_index(col: usize, row: usize) -> usize {
-        ROWS * row + col
-    }
 }
 
 impl Index<(usize, usize)> for Grid {
