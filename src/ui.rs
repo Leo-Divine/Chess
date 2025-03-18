@@ -9,6 +9,7 @@ pub struct UI {
     board: Board,
     cursor_active: bool,
     cursor_position: Point,
+    grabbed_piece_position: (usize, usize),
 }
 
 impl UI {
@@ -24,13 +25,20 @@ impl UI {
                 self.cursor_position = position;
             }
             Message::LeftButtonPressed => {
-                println!(
-                    "({}, {})",
-                    (self.cursor_position.x / 100f32).floor(),
-                    (self.cursor_position.y / 100f32).floor()
+                self.grabbed_piece_position = (
+                    (self.cursor_position.x / 100f32).floor() as usize,
+                    (self.cursor_position.y / 100f32).floor() as usize,
                 );
             }
-            Message::LeftButtonReleased => {}
+            Message::LeftButtonReleased => {
+                let mut handle = self.board.lock().unwrap();
+                let new_position: (usize, usize) = (
+                    (self.cursor_position.x / 100f32).floor() as usize,
+                    (self.cursor_position.y / 100f32).floor() as usize,
+                );
+
+                handle.move_piece(self.grabbed_piece_position, new_position);
+            }
         }
     }
     pub fn view(&self) -> Element<'_, Message> {
@@ -80,6 +88,10 @@ impl UI {
         mouse_area(board)
             .on_press(Message::LeftButtonPressed)
             .on_move(Message::CursorMoved)
+            .on_release(Message::LeftButtonReleased)
             .into()
+    }
+    pub fn theme(&self) -> iced::Theme {
+        iced::Theme::Dracula
     }
 }

@@ -57,8 +57,12 @@ impl Default for Grid {
 }
 
 impl Grid {
-    pub fn new() -> Self {
-        Default::default()
+    pub fn move_piece(&mut self, old_position: (usize, usize), new_position: (usize, usize)) {
+        if self[old_position] == Pieces::None {
+            return;
+        }
+        self[new_position] = self[old_position].clone();
+        self[old_position] = Pieces::None;
     }
 
     fn get_index(col: usize, row: usize) -> usize {
