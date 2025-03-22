@@ -158,58 +158,54 @@ impl Grid {
         let y_abs: i8 = y_move.abs();
 
         //BLACK PAWN
-        if piece == Pieces::BlackPawn {
-            if y_move != 1 || x_move != 0 {
-                if old_position.1 != 1 || y_move != 2 {
-                    return false;
-                }
-            }
+        if (piece == Pieces::BlackPawn)
+            && (y_move != 1 || x_move != 0)
+            && (old_position.1 != 1 || y_move != 2)
+        {
+            return false;
         }
         //WHITE PAWN
-        if piece == Pieces::WhitePawn {
-            if y_move != -1 || x_move != 0 {
-                if old_position.1 != 6 || y_move != -2 {
-                    return false;
-                }
-            }
+        if (piece == Pieces::WhitePawn)
+            && (y_move != -1 || x_move != 0)
+            && (old_position.1 != 6 || y_move != -2)
+        {
+            return false;
         }
         //ROOK
-        if piece == Pieces::BlackRook || piece == Pieces::WhiteRook {
-            if old_position.0 != new_position.0 && old_position.1 != new_position.1 {
-                return false;
-            }
-            if self.is_jumping_piece(piece.clone(), old_position, x_move, y_move) {
-                return false;
-            }
+        if (piece == Pieces::BlackRook || piece == Pieces::WhiteRook)
+            && (old_position.0 != new_position.0 && old_position.1 != new_position.1)
+        {
+            return false;
         }
         //KNIGHT
-        if piece == Pieces::BlackKnight || piece == Pieces::WhiteKnight {
-            if (x_abs != 2 || y_abs != 1) && (x_abs != 1 || y_abs != 2) {
-                return false;
-            }
+        if (piece == Pieces::BlackKnight || piece == Pieces::WhiteKnight)
+            && ((x_abs != 2 || y_abs != 1) && (x_abs != 1 || y_abs != 2))
+        {
+            return false;
         }
         //BISHOP
-        if piece == Pieces::BlackBishop || piece == Pieces::WhiteBishop {
-            if (x_move + y_move) != 0i8 && (x_move - y_move) != 0i8 {
-                return false;
-            }
+        if (piece == Pieces::BlackBishop || piece == Pieces::WhiteBishop)
+            && ((x_move + y_move) != 0i8 && (x_move - y_move) != 0i8)
+        {
+            return false;
         }
         //QUEEN
-        if piece == Pieces::BlackQueen || piece == Pieces::WhiteQueen {
-            if ((x_move + y_move) != 0i8 && (x_move - y_move) != 0i8)
-                && (old_position.0 != new_position.0 && old_position.1 != new_position.1)
-            {
-                return false;
-            }
+        if (piece == Pieces::BlackQueen || piece == Pieces::WhiteQueen)
+            && (((x_move + y_move) != 0i8 && (x_move - y_move) != 0i8)
+                && (old_position.0 != new_position.0 && old_position.1 != new_position.1))
+        {
+            return false;
         }
         //KING
-        if piece == Pieces::BlackKing || piece == Pieces::WhiteKing {
-            if (x_abs != 0 || y_abs != 1)
+        if (piece == Pieces::BlackKing || piece == Pieces::WhiteKing)
+            && ((x_abs != 0 || y_abs != 1)
                 && (x_abs != 1 || y_abs != 0)
-                && (x_abs != 1 || y_abs != 1)
-            {
-                return false;
-            }
+                && (x_abs != 1 || y_abs != 1))
+        {
+            return false;
+        }
+        if self.is_jumping_piece(piece.clone(), old_position, x_move, y_move) {
+            return false;
         }
         true
     }
@@ -253,11 +249,86 @@ impl Grid {
             }
             false
         }
+        fn check_diagonally_pos(grid: &mut Grid, old_position: (usize, usize), x_move: i8) -> bool {
+            for i in 1..x_move {
+                if grid[(
+                    (old_position.0 as i8 - i) as usize,
+                    (old_position.1 as i8 + i) as usize,
+                )] != Pieces::None
+                {
+                    return true;
+                }
+            }
+            for i in x_move..0 {
+                if i == x_move {
+                    continue;
+                }
+                if grid[(
+                    (old_position.0 as i8 + i) as usize,
+                    (old_position.1 as i8 - i) as usize,
+                )] != Pieces::None
+                {
+                    return true;
+                }
+            }
+            false
+        }
+        fn check_diagonally_neg(grid: &mut Grid, old_position: (usize, usize), x_move: i8) -> bool {
+            for i in 1..x_move {
+                if grid[(
+                    (old_position.0 as i8 + i) as usize,
+                    (old_position.1 as i8 + i) as usize,
+                )] != Pieces::None
+                {
+                    return true;
+                }
+            }
+            for i in x_move..0 {
+                if i == x_move {
+                    continue;
+                }
+                if grid[(
+                    (old_position.0 as i8 + i) as usize,
+                    (old_position.1 as i8 + i) as usize,
+                )] != Pieces::None
+                {
+                    return true;
+                }
+            }
+            false
+        }
+        //PAWN
+        if piece == Pieces::BlackPawn || piece == Pieces::WhitePawn {
+            return check_vertically(self, old_position, y_move);
+        }
+        //ROOK
         if piece == Pieces::BlackRook || piece == Pieces::WhiteRook {
             if x_move == 0 {
                 return check_vertically(self, old_position, y_move);
             }
             return check_horizontally(self, old_position, x_move);
+        }
+        //BISHOP
+        if piece == Pieces::BlackBishop || piece == Pieces::WhiteBishop {
+            if (x_move + y_move) == 0i8 {
+                return check_diagonally_pos(self, old_position, x_move);
+            }
+            return check_diagonally_neg(self, old_position, x_move);
+        }
+        //QUEEN
+        if piece == Pieces::BlackQueen || piece == Pieces::WhiteQueen {
+            if (x_move + y_move) == 0i8 {
+                return check_diagonally_pos(self, old_position, x_move);
+            } else if (x_move - y_move) == 0i8 {
+                return check_diagonally_neg(self, old_position, x_move);
+            } else if x_move == 0 {
+                return check_vertically(self, old_position, y_move);
+            }
+            return check_horizontally(self, old_position, x_move);
+        }
+        //KING
+        if piece == Pieces::BlackKing || piece == Pieces::WhiteKing {
+            return check_horizontally(self, old_position, y_move);
         }
         false
     }
