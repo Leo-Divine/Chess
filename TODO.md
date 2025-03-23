@@ -6,4 +6,4 @@
 ### Main
 - [x] Add results for main.rs
 ### UI
-- [ ] Add a Proper Theme for the Board
+- [X] Add a Proper Theme for the Board

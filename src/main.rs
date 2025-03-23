@@ -5,9 +5,7 @@ mod grid;
 mod ui;
 
 fn main() -> iced::Result {
-    iced::application("Chess", UI::update, UI::view)
-        .theme(UI::theme)
-        .run()
+    iced::application("Chess", UI::update, UI::view).run()
 }
 
 #[derive(Debug, Clone)]

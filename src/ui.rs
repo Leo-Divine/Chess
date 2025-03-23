@@ -1,7 +1,8 @@
 use crate::{grid::Board, Message};
 use iced::{
+    color,
     widget::{container, mouse_area, svg, Column, Container, Row},
-    Element, Point,
+    Element, Point, Theme,
 };
 
 #[derive(Default)]
@@ -49,38 +50,42 @@ impl UI {
             let mut odd_row = Row::new();
             let mut even_row = Row::new();
             for r in 0..4 {
-                let black_container: Container<'_, Message> =
+                let white_container: Container<'_, Message> =
                     container(svg(format!("src/pieces/{:?}.svg", handle[(r * 2, c * 2)])))
                         .width(100)
                         .height(100)
-                        .style(container::dark);
-                let white_container: Container<'_, Message> = container(svg(format!(
+                        .style(|_theme: &Theme| {
+                            container::Style::default().background(color!(0xE3C16F))
+                        });
+                let black_container: Container<'_, Message> = container(svg(format!(
                     "src/pieces/{:?}.svg",
                     handle[(r * 2 + 1, c * 2)]
                 )))
                 .width(100)
-                .height(100);
-                odd_row = odd_row.push(black_container);
+                .height(100)
+                .style(|_theme: &Theme| container::Style::default().background(color!(0xB88B4A)));
                 odd_row = odd_row.push(white_container);
+                odd_row = odd_row.push(black_container);
             }
             board = board.push(odd_row);
 
             for r in 0..4 {
-                let white_container: Container<'_, Message> = container(svg(format!(
+                let black_container: Container<'_, Message> = container(svg(format!(
                     "src/pieces/{:?}.svg",
                     handle[(r * 2, c * 2 + 1)]
                 )))
                 .width(100)
-                .height(100);
-                let black_container: Container<'_, Message> = container(svg(format!(
+                .height(100)
+                .style(|_theme: &Theme| container::Style::default().background(color!(0xB88B4A)));
+                let white_container: Container<'_, Message> = container(svg(format!(
                     "src/pieces/{:?}.svg",
                     handle[(r * 2 + 1, c * 2 + 1)]
                 )))
                 .width(100)
                 .height(100)
-                .style(container::dark);
-                even_row = even_row.push(white_container);
+                .style(|_theme: &Theme| container::Style::default().background(color!(0xE3C16F)));
                 even_row = even_row.push(black_container);
+                even_row = even_row.push(white_container);
             }
             board = board.push(even_row);
         }
@@ -90,8 +95,5 @@ impl UI {
             .on_move(Message::CursorMoved)
             .on_release(Message::LeftButtonReleased)
             .into()
-    }
-    pub fn theme(&self) -> iced::Theme {
-        iced::Theme::Dracula
     }
 }
