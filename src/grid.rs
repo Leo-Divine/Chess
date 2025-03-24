@@ -372,14 +372,14 @@ impl Grid {
         self.items
             .iter()
             .filter(|piece| WHITE_PIECES.contains(&piece.piece_type))
-            .map(|piece| piece.clone())
+            .cloned()
             .collect()
     }
     fn get_black_pieces(&self) -> Vec<Piece> {
         self.items
             .iter()
             .filter(|piece| BLACK_PIECES.contains(&piece.piece_type))
-            .map(|piece| piece.clone())
+            .cloned()
             .collect()
     }
     fn get_white_king(&self) -> Piece {
@@ -420,9 +420,7 @@ impl Grid {
         }
         //WHITE PAWN
         if (piece.piece_type == Pieces::WhitePawn)
-            && (y_move != -1
-                || x_move != 0
-                || self[new_position].piece_type != Pieces::None)
+            && (y_move != -1 || x_move != 0 || self[new_position].piece_type != Pieces::None)
             && (piece.position.y != 6
                 || y_move != -2
                 || x_move != 0
