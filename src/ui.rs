@@ -1,4 +1,7 @@
-use crate::{grid::Board, Message};
+use crate::{
+    grid::{Board, Piece, Position},
+    Message,
+};
 use iced::{
     color,
     widget::{container, mouse_area, svg, Column, Container, Row},
@@ -10,7 +13,7 @@ pub struct UI {
     board: Board,
     cursor_active: bool,
     cursor_position: Point,
-    grabbed_piece_position: (usize, usize),
+    grabbed_piece: Piece,
 }
 
 impl UI {
@@ -26,19 +29,21 @@ impl UI {
                 self.cursor_position = position;
             }
             Message::LeftButtonPressed => {
-                self.grabbed_piece_position = (
+                let handle = self.board.lock().unwrap();
+                self.grabbed_piece = handle[(
                     (self.cursor_position.x / 100f32).floor() as usize,
                     (self.cursor_position.y / 100f32).floor() as usize,
-                );
+                )]
+                    .clone();
             }
             Message::LeftButtonReleased => {
                 let mut handle = self.board.lock().unwrap();
-                let new_position: (usize, usize) = (
+                let new_position: Position = Position::new(
                     (self.cursor_position.x / 100f32).floor() as usize,
                     (self.cursor_position.y / 100f32).floor() as usize,
                 );
 
-                handle.move_piece(self.grabbed_piece_position, new_position);
+                handle.move_piece(self.grabbed_piece.clone(), new_position);
             }
         }
     }
@@ -50,16 +55,16 @@ impl UI {
             let mut odd_row = Row::new();
             let mut even_row = Row::new();
             for r in 0..4 {
-                let white_container: Container<'_, Message> =
-                    container(svg(format!("src/pieces/{:?}.svg", handle[(r * 2, c * 2)])))
-                        .width(100)
-                        .height(100)
-                        .style(|_theme: &Theme| {
-                            container::Style::default().background(color!(0xE3C16F))
-                        });
+                let white_container: Container<'_, Message> = container(svg(format!(
+                    "src/pieces/{:?}.svg",
+                    handle[(r * 2, c * 2)].piece_type
+                )))
+                .width(100)
+                .height(100)
+                .style(|_theme: &Theme| container::Style::default().background(color!(0xE3C16F)));
                 let black_container: Container<'_, Message> = container(svg(format!(
                     "src/pieces/{:?}.svg",
-                    handle[(r * 2 + 1, c * 2)]
+                    handle[(r * 2 + 1, c * 2)].piece_type
                 )))
                 .width(100)
                 .height(100)
@@ -72,14 +77,14 @@ impl UI {
             for r in 0..4 {
                 let black_container: Container<'_, Message> = container(svg(format!(
                     "src/pieces/{:?}.svg",
-                    handle[(r * 2, c * 2 + 1)]
+                    handle[(r * 2, c * 2 + 1)].piece_type
                 )))
                 .width(100)
                 .height(100)
                 .style(|_theme: &Theme| container::Style::default().background(color!(0xB88B4A)));
                 let white_container: Container<'_, Message> = container(svg(format!(
                     "src/pieces/{:?}.svg",
-                    handle[(r * 2 + 1, c * 2 + 1)]
+                    handle[(r * 2 + 1, c * 2 + 1)].piece_type
                 )))
                 .width(100)
                 .height(100)

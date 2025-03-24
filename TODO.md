@@ -7,7 +7,7 @@
     - [X] Pawn Capturing
     - [x] Prevent Forward Pawn Captures
 - [ ] Add Checks and Checkmates
-    - [x] Checks
+    - [ ] Checks
     - [ ] Checkmates
 - [ ] Change Pieces to Piece Struct
 ### Main
