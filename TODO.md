@@ -7,9 +7,9 @@
     - [X] Pawn Capturing
     - [x] Prevent Forward Pawn Captures
 - [ ] Add Checks and Checkmates
-    - [ ] Checks
+    - [x] Checks
     - [ ] Checkmates
-- [ ] Change Pieces to Piece Struct
+- [x] Change Pieces to Piece Struct
 ### Main
 - [x] Add results for main.rs
 ### UI

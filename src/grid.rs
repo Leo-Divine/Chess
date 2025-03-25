@@ -472,10 +472,10 @@ impl Grid {
         }
         true
     }
-
     fn is_jumping_piece(&self, piece: Piece, x_move: i8, y_move: i8) -> bool {
-        fn check_horizontally(grid: &Grid, mut position: Position, x_move: i8) -> bool {
+        fn check_horizontally(grid: &Grid, piece_position: Position, x_move: i8) -> bool {
             for i in 1..x_move {
+                let mut position: Position = piece_position;
                 position.x = (position.x as i8 + i) as usize;
                 if grid[position].piece_type != Pieces::None {
                     return true;
@@ -485,6 +485,7 @@ impl Grid {
                 if i == x_move {
                     continue;
                 }
+                let mut position: Position = piece_position;
                 position.x = (position.x as i8 + i) as usize;
                 if grid[position].piece_type != Pieces::None {
                     return true;
@@ -492,8 +493,9 @@ impl Grid {
             }
             false
         }
-        fn check_vertically(grid: &Grid, mut position: Position, y_move: i8) -> bool {
+        fn check_vertically(grid: &Grid, piece_position: Position, y_move: i8) -> bool {
             for i in 1..y_move {
+                let mut position: Position = piece_position;
                 position.y = (position.y as i8 + i) as usize;
                 if grid[position].piece_type != Pieces::None {
                     return true;
@@ -503,6 +505,7 @@ impl Grid {
                 if i == y_move {
                     continue;
                 }
+                let mut position: Position = piece_position;
                 position.y = (position.y as i8 + i) as usize;
                 if grid[position].piece_type != Pieces::None {
                     return true;
@@ -510,8 +513,9 @@ impl Grid {
             }
             false
         }
-        fn check_diagonally_pos(grid: &Grid, mut position: Position, x_move: i8) -> bool {
+        fn check_diagonally_pos(grid: &Grid, piece_position: Position, x_move: i8) -> bool {
             for i in 1..x_move {
+                let mut position: Position = piece_position;
                 position.x = (position.x as i8 + i) as usize;
                 position.y = (position.y as i8 - i) as usize;
                 if grid[position].piece_type != Pieces::None {
@@ -522,6 +526,7 @@ impl Grid {
                 if i == x_move {
                     continue;
                 }
+                let mut position: Position = piece_position;
                 position.x = (position.x as i8 + i) as usize;
                 position.y = (position.y as i8 - i) as usize;
                 if grid[position].piece_type != Pieces::None {
@@ -530,8 +535,9 @@ impl Grid {
             }
             false
         }
-        fn check_diagonally_neg(grid: &Grid, mut position: Position, x_move: i8) -> bool {
+        fn check_diagonally_neg(grid: &Grid, piece_position: Position, x_move: i8) -> bool {
             for i in 1..x_move {
+                let mut position: Position = piece_position;
                 position.x = (position.x as i8 + i) as usize;
                 position.y = (position.y as i8 + i) as usize;
                 if grid[position].piece_type != Pieces::None {
@@ -542,6 +548,7 @@ impl Grid {
                 if i == x_move {
                     continue;
                 }
+                let mut position: Position = piece_position;
                 position.x = (position.x as i8 + i) as usize;
                 position.y = (position.y as i8 + i) as usize;
                 if grid[position].piece_type != Pieces::None {
