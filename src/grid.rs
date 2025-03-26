@@ -327,30 +327,36 @@ impl Default for Grid {
 }
 
 impl Grid {
-    pub fn move_piece(&mut self, piece: Piece, new_position: Position) {
+    pub fn move_piece(&mut self, piece: Piece, new_position: Position) -> Option<String> {
+        let mut piece_captured = false;
+        let mut in_check = false;
         //Don't move nothing
         if piece.piece_type == Pieces::None {
-            return;
+            return None;
         }
         //Make sure a piece moved
         if piece.position == new_position {
-            return;
+            return None;
         }
         //It better be your turn
         if (self.turn && BLACK_PIECES.contains(&piece.piece_type))
             || (!self.turn && WHITE_PIECES.contains(&piece.piece_type))
         {
-            return;
+            return None;
         }
         //Make sure the piece moved correctly
         if !self.is_move_valid(piece.clone(), new_position) {
-            return;
+            return None;
         }
         //Don't capture your own pieces
         if (self.turn && WHITE_PIECES.contains(&self[new_position].piece_type))
             || (!self.turn && BLACK_PIECES.contains(&self[new_position].piece_type))
         {
-            return;
+            return None;
+        }
+        //Check if piece is captured
+        if self[new_position].piece_type != Pieces::None {
+            piece_captured = true;
         }
         //Don't put yourself in check idiot
         let temp_old_piece = piece.piece_type.clone();
@@ -360,13 +366,44 @@ impl Grid {
         if self.in_check(!self.turn) {
             self[piece.position].piece_type = temp_old_piece;
             self[new_position].piece_type = temp_new_piece;
-            return;
+            return None;
         }
         //Check for checks
         if self.in_check(self.turn) {
-            println!("Holy fuck you're dead");
+            in_check = true;
         }
         self.turn = !self.turn;
+
+        let mut piece_notation:String = match piece.piece_type {
+            Pieces::None | Pieces::WhitePawn | Pieces::BlackPawn => "".to_string(),
+            Pieces::WhiteKnight | Pieces::BlackKnight => "N".to_string(),
+            Pieces::WhiteBishop | Pieces::BlackBishop => "B".to_string(),
+            Pieces::WhiteRook | Pieces::BlackRook => "R".to_string(),
+            Pieces::WhiteQueen | Pieces::BlackQueen => "Q".to_string(),
+            Pieces::WhiteKing | Pieces::BlackKing => "K".to_string(),
+        };
+        if (piece.piece_type == Pieces::WhitePawn || piece.piece_type == Pieces::BlackPawn)
+            && piece_captured
+        {
+            piece_notation = ((piece.position.y + 97) as u8 as char).to_string()
+        }
+
+        let mut check_checkmate = "";
+        if in_check {
+            check_checkmate = "+";
+        }
+
+        Some(format!(
+            "{}{}{}{}{}",
+            piece_notation,
+            match piece_captured {
+                true => "x",
+                false => "",
+            },
+            (new_position.x + 97) as u8 as char,
+            new_position.y,
+            check_checkmate
+        ))
     }
     fn get_white_pieces(&self) -> Vec<Piece> {
         self.items
@@ -609,6 +646,13 @@ impl Grid {
             }
         }
         false
+    }
+    pub fn get_turn(&self) -> String {
+        if self.turn {
+            "It's White's Turn!".to_string()
+        } else {
+            "It's Black's Turn!".to_string()
+        }
     }
 }
 

@@ -10,10 +10,12 @@
     - [x] Checks
     - [ ] Checkmates
 - [x] Change Pieces to Piece Struct
+- [ ] Castling (Good Luck)
 ### Main
 - [x] Add results for main.rs
 ### UI
 - [X] Add a Proper Theme for the Board
-- [ ] Add a Previous Move Log
-- [ ] Add Some Text for Player Turn and Game Status
-- [ ] Properly Scale Pieces to Different Screen Sizes
+- [x] Add a Previous Move Log
+    - [ ] Fix notations
+- [x] Add Some Text for Player Turn and Game Status
+- [x] Properly Scale Pieces to Different Screen Sizes
