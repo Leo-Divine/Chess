@@ -1,5 +1,5 @@
 use crate::{
-    grid::{Board, Piece, Position},
+    grid::{Grid, Position},
     Message,
 };
 use iced::{
@@ -11,10 +11,10 @@ use iced::{
 
 #[derive(Default)]
 pub struct UI {
-    board: Board,
+    board: Grid,
     cursor_active: bool,
     cursor_position: Point,
-    grabbed_piece: Piece,
+    grabbed_piece_pos: Position,
     previous_moves: Vec<String>,
 }
 
@@ -31,21 +31,18 @@ impl UI {
                 self.cursor_position = position;
             }
             Message::LeftButtonPressed => {
-                let handle = self.board.lock().unwrap();
-                self.grabbed_piece = handle[(
+                self.grabbed_piece_pos = Position::new(
                     (self.cursor_position.x / 100f32).floor() as usize,
                     (self.cursor_position.y / 100f32).floor() as usize,
-                )]
-                    .clone();
+                )
             }
             Message::LeftButtonReleased => {
-                let mut handle = self.board.lock().unwrap();
                 let new_position: Position = Position::new(
                     (self.cursor_position.x / 100f32).floor() as usize,
                     (self.cursor_position.y / 100f32).floor() as usize,
                 );
 
-                match handle.move_piece(self.grabbed_piece.clone(), new_position) {
+                match self.board.move_piece(self.grabbed_piece_pos, new_position) {
                     Some(notation) => self.previous_moves.push(notation),
                     None => println!("Invalid Move"),
                 };
@@ -53,7 +50,6 @@ impl UI {
         }
     }
     pub fn view(&self) -> Element<'_, Message> {
-        let handle = self.board.lock().unwrap();
         let mut screen = Row::new();
         let mut chess_board = Column::new().width(Length::FillPortion(2));
 
@@ -63,14 +59,14 @@ impl UI {
             for r in 0..4 {
                 let white_container: Container<'_, Message> = container(svg(format!(
                     "src/pieces/{:?}.svg",
-                    handle[(r * 2, c * 2)].piece_type
+                    self.board[(r * 2, c * 2)]
                 )))
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
                 .style(|_theme: &Theme| container::Style::default().background(color!(0xE3C16F)));
                 let black_container: Container<'_, Message> = container(svg(format!(
                     "src/pieces/{:?}.svg",
-                    handle[(r * 2 + 1, c * 2)].piece_type
+                    self.board[(r * 2 + 1, c * 2)]
                 )))
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
@@ -83,14 +79,14 @@ impl UI {
             for r in 0..4 {
                 let black_container: Container<'_, Message> = container(svg(format!(
                     "src/pieces/{:?}.svg",
-                    handle[(r * 2, c * 2 + 1)].piece_type
+                    self.board[(r * 2, c * 2 + 1)]
                 )))
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
                 .style(|_theme: &Theme| container::Style::default().background(color!(0xB88B4A)));
                 let white_container: Container<'_, Message> = container(svg(format!(
                     "src/pieces/{:?}.svg",
-                    handle[(r * 2 + 1, c * 2 + 1)].piece_type
+                    self.board[(r * 2 + 1, c * 2 + 1)]
                 )))
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
@@ -107,7 +103,7 @@ impl UI {
             .size(24)
             .width(Length::Fill)
             .align_x(Alignment::Center);
-        let turn: Text = text(handle.get_turn())
+        let turn: Text = text(self.board.get_turn())
             .size(20)
             .width(Length::Fill)
             .align_x(Alignment::Center);

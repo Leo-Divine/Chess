@@ -16,6 +16,6 @@
 ### UI
 - [X] Add a Proper Theme for the Board
 - [x] Add a Previous Move Log
-    - [ ] Fix notations
+    - [x] Fix notations
 - [x] Add Some Text for Player Turn and Game Status
 - [x] Properly Scale Pieces to Different Screen Sizes

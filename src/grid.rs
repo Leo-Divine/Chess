@@ -1,5 +1,4 @@
 use std::ops::{Index, IndexMut};
-use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone, Default, PartialEq, Copy)]
 pub struct Position {
@@ -13,7 +12,7 @@ impl Position {
     }
 }
 
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, Copy)]
 pub enum Pieces {
     #[default]
     None,
@@ -49,14 +48,8 @@ const BLACK_PIECES: [Pieces; 6] = [
     Pieces::BlackKing,
 ];
 
-#[derive(Debug, Clone, Default)]
-pub struct Piece {
-    pub piece_type: Pieces,
-    pub position: Position,
-}
-
 pub struct Grid {
-    items: [Piece; 64],
+    items: [Pieces; 64],
     turn: bool, //true = white; false = black;
 }
 
@@ -64,262 +57,70 @@ impl Default for Grid {
     fn default() -> Self {
         Self {
             items: [
-                Piece {
-                    piece_type: Pieces::BlackRook,
-                    position: Position::new(0, 0),
-                },
-                Piece {
-                    piece_type: Pieces::BlackKnight,
-                    position: Position::new(1, 0),
-                },
-                Piece {
-                    piece_type: Pieces::BlackBishop,
-                    position: Position::new(2, 0),
-                },
-                Piece {
-                    piece_type: Pieces::BlackQueen,
-                    position: Position::new(3, 0),
-                },
-                Piece {
-                    piece_type: Pieces::BlackKing,
-                    position: Position::new(4, 0),
-                },
-                Piece {
-                    piece_type: Pieces::BlackBishop,
-                    position: Position::new(5, 0),
-                },
-                Piece {
-                    piece_type: Pieces::BlackKnight,
-                    position: Position::new(6, 0),
-                },
-                Piece {
-                    piece_type: Pieces::BlackRook,
-                    position: Position::new(7, 0),
-                },
-                Piece {
-                    piece_type: Pieces::BlackPawn,
-                    position: Position::new(0, 1),
-                },
-                Piece {
-                    piece_type: Pieces::BlackPawn,
-                    position: Position::new(1, 1),
-                },
-                Piece {
-                    piece_type: Pieces::BlackPawn,
-                    position: Position::new(2, 1),
-                },
-                Piece {
-                    piece_type: Pieces::BlackPawn,
-                    position: Position::new(3, 1),
-                },
-                Piece {
-                    piece_type: Pieces::BlackPawn,
-                    position: Position::new(4, 1),
-                },
-                Piece {
-                    piece_type: Pieces::BlackPawn,
-                    position: Position::new(5, 1),
-                },
-                Piece {
-                    piece_type: Pieces::BlackPawn,
-                    position: Position::new(6, 1),
-                },
-                Piece {
-                    piece_type: Pieces::BlackPawn,
-                    position: Position::new(7, 1),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(0, 2),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(1, 2),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(2, 2),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(3, 2),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(4, 2),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(5, 2),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(6, 2),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(7, 2),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(0, 3),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(1, 3),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(2, 3),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(3, 3),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(4, 3),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(5, 3),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(6, 3),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(7, 3),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(0, 4),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(1, 4),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(2, 4),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(3, 4),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(4, 4),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(5, 4),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(6, 4),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(7, 4),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(0, 5),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(1, 5),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(2, 5),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(3, 5),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(4, 5),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(5, 5),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(6, 5),
-                },
-                Piece {
-                    piece_type: Pieces::None,
-                    position: Position::new(7, 5),
-                },
-                Piece {
-                    piece_type: Pieces::WhitePawn,
-                    position: Position::new(0, 6),
-                },
-                Piece {
-                    piece_type: Pieces::WhitePawn,
-                    position: Position::new(1, 6),
-                },
-                Piece {
-                    piece_type: Pieces::WhitePawn,
-                    position: Position::new(2, 6),
-                },
-                Piece {
-                    piece_type: Pieces::WhitePawn,
-                    position: Position::new(3, 6),
-                },
-                Piece {
-                    piece_type: Pieces::WhitePawn,
-                    position: Position::new(4, 6),
-                },
-                Piece {
-                    piece_type: Pieces::WhitePawn,
-                    position: Position::new(5, 6),
-                },
-                Piece {
-                    piece_type: Pieces::WhitePawn,
-                    position: Position::new(6, 6),
-                },
-                Piece {
-                    piece_type: Pieces::WhitePawn,
-                    position: Position::new(7, 6),
-                },
-                Piece {
-                    piece_type: Pieces::WhiteRook,
-                    position: Position::new(0, 7),
-                },
-                Piece {
-                    piece_type: Pieces::WhiteKnight,
-                    position: Position::new(1, 7),
-                },
-                Piece {
-                    piece_type: Pieces::WhiteBishop,
-                    position: Position::new(2, 7),
-                },
-                Piece {
-                    piece_type: Pieces::WhiteQueen,
-                    position: Position::new(3, 7),
-                },
-                Piece {
-                    piece_type: Pieces::WhiteKing,
-                    position: Position::new(4, 7),
-                },
-                Piece {
-                    piece_type: Pieces::WhiteBishop,
-                    position: Position::new(5, 7),
-                },
-                Piece {
-                    piece_type: Pieces::WhiteKnight,
-                    position: Position::new(6, 7),
-                },
-                Piece {
-                    piece_type: Pieces::WhiteRook,
-                    position: Position::new(7, 7),
-                },
+                Pieces::BlackRook,
+                Pieces::BlackKnight,
+                Pieces::BlackBishop,
+                Pieces::BlackQueen,
+                Pieces::BlackKing,
+                Pieces::BlackBishop,
+                Pieces::BlackKnight,
+                Pieces::BlackRook,
+                Pieces::BlackPawn,
+                Pieces::BlackPawn,
+                Pieces::BlackPawn,
+                Pieces::BlackPawn,
+                Pieces::BlackPawn,
+                Pieces::BlackPawn,
+                Pieces::BlackPawn,
+                Pieces::BlackPawn,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::None,
+                Pieces::WhitePawn,
+                Pieces::WhitePawn,
+                Pieces::WhitePawn,
+                Pieces::WhitePawn,
+                Pieces::WhitePawn,
+                Pieces::WhitePawn,
+                Pieces::WhitePawn,
+                Pieces::WhitePawn,
+                Pieces::WhiteRook,
+                Pieces::WhiteKnight,
+                Pieces::WhiteBishop,
+                Pieces::WhiteQueen,
+                Pieces::WhiteKing,
+                Pieces::WhiteBishop,
+                Pieces::WhiteKnight,
+                Pieces::WhiteRook,
             ],
             turn: true,
         }
@@ -327,45 +128,45 @@ impl Default for Grid {
 }
 
 impl Grid {
-    pub fn move_piece(&mut self, piece: Piece, new_position: Position) -> Option<String> {
+    pub fn move_piece(&mut self, old_position: Position, new_position: Position) -> Option<String> {
+        let moved_piece: Pieces = self[old_position];
+        let attacked_piece: Pieces = self[new_position];
         let mut piece_captured = false;
         let mut in_check = false;
-        //Don't move nothing
-        if piece.piece_type == Pieces::None {
+        //Don't move a blank tile
+        if moved_piece == Pieces::None {
             return None;
         }
         //Make sure a piece moved
-        if piece.position == new_position {
+        if old_position == new_position {
             return None;
         }
         //It better be your turn
-        if (self.turn && BLACK_PIECES.contains(&piece.piece_type))
-            || (!self.turn && WHITE_PIECES.contains(&piece.piece_type))
+        if (self.turn && BLACK_PIECES.contains(&moved_piece))
+            || (!self.turn && WHITE_PIECES.contains(&moved_piece))
         {
             return None;
         }
         //Make sure the piece moved correctly
-        if !self.is_move_valid(piece.clone(), new_position) {
+        if !self.is_move_valid(old_position, new_position) {
             return None;
         }
         //Don't capture your own pieces
-        if (self.turn && WHITE_PIECES.contains(&self[new_position].piece_type))
-            || (!self.turn && BLACK_PIECES.contains(&self[new_position].piece_type))
+        if (self.turn && WHITE_PIECES.contains(&attacked_piece))
+            || (!self.turn && BLACK_PIECES.contains(&attacked_piece))
         {
             return None;
         }
         //Check if piece is captured
-        if self[new_position].piece_type != Pieces::None {
+        if attacked_piece != Pieces::None {
             piece_captured = true;
         }
         //Don't put yourself in check idiot
-        let temp_old_piece = piece.piece_type.clone();
-        let temp_new_piece = self[new_position].piece_type.clone();
-        self[new_position].piece_type = piece.piece_type.clone();
-        self[piece.position].piece_type = Pieces::None;
+        self[new_position] = moved_piece;
+        self[old_position] = Pieces::None;
         if self.in_check(!self.turn) {
-            self[piece.position].piece_type = temp_old_piece;
-            self[new_position].piece_type = temp_new_piece;
+            self[old_position] = moved_piece;
+            self[new_position] = attacked_piece;
             return None;
         }
         //Check for checks
@@ -374,7 +175,7 @@ impl Grid {
         }
         self.turn = !self.turn;
 
-        let mut piece_notation:String = match piece.piece_type {
+        let mut piece_notation: String = match moved_piece {
             Pieces::None | Pieces::WhitePawn | Pieces::BlackPawn => "".to_string(),
             Pieces::WhiteKnight | Pieces::BlackKnight => "N".to_string(),
             Pieces::WhiteBishop | Pieces::BlackBishop => "B".to_string(),
@@ -382,10 +183,9 @@ impl Grid {
             Pieces::WhiteQueen | Pieces::BlackQueen => "Q".to_string(),
             Pieces::WhiteKing | Pieces::BlackKing => "K".to_string(),
         };
-        if (piece.piece_type == Pieces::WhitePawn || piece.piece_type == Pieces::BlackPawn)
-            && piece_captured
+        if (moved_piece == Pieces::WhitePawn || moved_piece == Pieces::BlackPawn) && piece_captured
         {
-            piece_notation = ((piece.position.y + 97) as u8 as char).to_string()
+            piece_notation = ((old_position.y + 97) as u8 as char).to_string()
         }
 
         let mut check_checkmate = "";
@@ -401,120 +201,131 @@ impl Grid {
                 false => "",
             },
             (new_position.x + 97) as u8 as char,
-            new_position.y,
+            8 - new_position.y,
             check_checkmate
         ))
     }
-    fn get_white_pieces(&self) -> Vec<Piece> {
-        self.items
-            .iter()
-            .filter(|piece| WHITE_PIECES.contains(&piece.piece_type))
-            .cloned()
-            .collect()
+    fn get_white_pieces_pos(&self) -> Vec<Position> {
+        let mut positions: Vec<Position> = Vec::new();
+        for (i, &piece) in self.items.iter().enumerate() {
+            if WHITE_PIECES.contains(&piece) {
+                positions.push(Position { x: i % 8, y: i / 8 });
+            }
+        }
+        positions
     }
-    fn get_black_pieces(&self) -> Vec<Piece> {
-        self.items
-            .iter()
-            .filter(|piece| BLACK_PIECES.contains(&piece.piece_type))
-            .cloned()
-            .collect()
+    fn get_black_pieces_pos(&self) -> Vec<Position> {
+        let mut positions: Vec<Position> = Vec::new();
+        for (i, &piece) in self.items.iter().enumerate() {
+            if BLACK_PIECES.contains(&piece) {
+                positions.push(Position { x: i % 8, y: i / 8 });
+            }
+        }
+        positions
     }
-    fn get_white_king(&self) -> Piece {
-        self.items
+    fn get_white_king_pos(&self) -> Position {
+        let index = self
+            .items
             .iter()
-            .find(|piece| piece.piece_type == Pieces::WhiteKing)
+            .enumerate()
+            .find(|x| *x.1 == Pieces::WhiteKing)
             .unwrap()
-            .clone()
+            .0;
+        Position {
+            x: index % 8,
+            y: index / 8,
+        }
     }
-    fn get_black_king(&self) -> Piece {
-        self.items
+    fn get_black_king_pos(&self) -> Position {
+        let index = self
+            .items
             .iter()
-            .find(|piece| piece.piece_type == Pieces::BlackKing)
+            .enumerate()
+            .find(|x| *x.1 == Pieces::BlackKing)
             .unwrap()
-            .clone()
+            .0;
+        Position {
+            x: index % 8,
+            y: index / 8,
+        }
     }
-    fn is_move_valid(&self, piece: Piece, new_position: Position) -> bool {
-        let x_move: i8 = (new_position.x as i8) - (piece.position.x as i8);
-        let y_move: i8 = (new_position.y as i8) - (piece.position.y as i8);
+    fn is_move_valid(&self, old_position: Position, new_position: Position) -> bool {
+        let piece: Pieces = self[old_position];
+        let x_move: i8 = (new_position.x as i8) - (old_position.x as i8);
+        let y_move: i8 = (new_position.y as i8) - (old_position.y as i8);
         let x_abs: i8 = x_move.abs();
         let y_abs: i8 = y_move.abs();
 
         //BLACK PAWN
-        if (piece.piece_type == Pieces::BlackPawn)
-            && (y_move != 1 || x_move != 0 || self[new_position].piece_type != Pieces::None)
-            && (piece.position.y != 1
+        if (piece == Pieces::BlackPawn)
+            && (y_move != 1 || x_move != 0 || self[new_position] != Pieces::None)
+            && (old_position.y != 1
                 || y_move != 2
                 || x_move != 0
-                || self[new_position].piece_type != Pieces::None)
+                || self[new_position] != Pieces::None)
         {
-            if y_move == 1
-                && (x_move == -1 || x_move == 1)
-                && self[new_position].piece_type != Pieces::None
-            {
+            if y_move == 1 && (x_move == -1 || x_move == 1) && self[new_position] != Pieces::None {
                 return true;
             }
             return false;
         }
         //WHITE PAWN
-        if (piece.piece_type == Pieces::WhitePawn)
-            && (y_move != -1 || x_move != 0 || self[new_position].piece_type != Pieces::None)
-            && (piece.position.y != 6
+        if (piece == Pieces::WhitePawn)
+            && (y_move != -1 || x_move != 0 || self[new_position] != Pieces::None)
+            && (old_position.y != 6
                 || y_move != -2
                 || x_move != 0
-                || self[new_position].piece_type != Pieces::None)
+                || self[new_position] != Pieces::None)
         {
-            if y_move == -1
-                && (x_move == -1 || x_move == 1)
-                && self[new_position].piece_type != Pieces::None
-            {
+            if y_move == -1 && (x_move == -1 || x_move == 1) && self[new_position] != Pieces::None {
                 return true;
             }
             return false;
         }
         //ROOK
-        if (piece.piece_type == Pieces::BlackRook || piece.piece_type == Pieces::WhiteRook)
-            && (piece.position.x != new_position.x && piece.position.y != new_position.y)
+        if (piece == Pieces::BlackRook || piece == Pieces::WhiteRook)
+            && (old_position.x != new_position.x && old_position.y != new_position.y)
         {
             return false;
         }
         //KNIGHT
-        if (piece.piece_type == Pieces::BlackKnight || piece.piece_type == Pieces::WhiteKnight)
+        if (piece == Pieces::BlackKnight || piece == Pieces::WhiteKnight)
             && ((x_abs != 2 || y_abs != 1) && (x_abs != 1 || y_abs != 2))
         {
             return false;
         }
         //BISHOP
-        if (piece.piece_type == Pieces::BlackBishop || piece.piece_type == Pieces::WhiteBishop)
+        if (piece == Pieces::BlackBishop || piece == Pieces::WhiteBishop)
             && ((x_move + y_move) != 0i8 && (x_move - y_move) != 0i8)
         {
             return false;
         }
         //QUEEN
-        if (piece.piece_type == Pieces::BlackQueen || piece.piece_type == Pieces::WhiteQueen)
+        if (piece == Pieces::BlackQueen || piece == Pieces::WhiteQueen)
             && (((x_move + y_move) != 0i8 && (x_move - y_move) != 0i8)
-                && (piece.position.x != new_position.x && piece.position.y != new_position.y))
+                && (old_position.x != new_position.x && old_position.y != new_position.y))
         {
             return false;
         }
         //KING
-        if (piece.piece_type == Pieces::BlackKing || piece.piece_type == Pieces::WhiteKing)
+        if (piece == Pieces::BlackKing || piece == Pieces::WhiteKing)
             && ((x_abs != 0 || y_abs != 1)
                 && (x_abs != 1 || y_abs != 0)
                 && (x_abs != 1 || y_abs != 1))
         {
             return false;
         }
-        if self.is_jumping_piece(piece, x_move, y_move) {
+        if self.is_jumping_piece(old_position, x_move, y_move) {
             return false;
         }
         true
     }
-    fn is_jumping_piece(&self, piece: Piece, x_move: i8, y_move: i8) -> bool {
+    fn is_jumping_piece(&self, start_position: Position, x_move: i8, y_move: i8) -> bool {
         fn check_horizontally(grid: &Grid, piece_position: Position, x_move: i8) -> bool {
             for i in 1..x_move {
                 let mut position: Position = piece_position;
                 position.x = (position.x as i8 + i) as usize;
-                if grid[position].piece_type != Pieces::None {
+                if grid[position] != Pieces::None {
                     return true;
                 }
             }
@@ -524,7 +335,7 @@ impl Grid {
                 }
                 let mut position: Position = piece_position;
                 position.x = (position.x as i8 + i) as usize;
-                if grid[position].piece_type != Pieces::None {
+                if grid[position] != Pieces::None {
                     return true;
                 }
             }
@@ -534,7 +345,7 @@ impl Grid {
             for i in 1..y_move {
                 let mut position: Position = piece_position;
                 position.y = (position.y as i8 + i) as usize;
-                if grid[position].piece_type != Pieces::None {
+                if grid[position] != Pieces::None {
                     return true;
                 }
             }
@@ -544,7 +355,7 @@ impl Grid {
                 }
                 let mut position: Position = piece_position;
                 position.y = (position.y as i8 + i) as usize;
-                if grid[position].piece_type != Pieces::None {
+                if grid[position] != Pieces::None {
                     return true;
                 }
             }
@@ -555,7 +366,7 @@ impl Grid {
                 let mut position: Position = piece_position;
                 position.x = (position.x as i8 + i) as usize;
                 position.y = (position.y as i8 - i) as usize;
-                if grid[position].piece_type != Pieces::None {
+                if grid[position] != Pieces::None {
                     return true;
                 }
             }
@@ -566,7 +377,7 @@ impl Grid {
                 let mut position: Position = piece_position;
                 position.x = (position.x as i8 + i) as usize;
                 position.y = (position.y as i8 - i) as usize;
-                if grid[position].piece_type != Pieces::None {
+                if grid[position] != Pieces::None {
                     return true;
                 }
             }
@@ -577,7 +388,7 @@ impl Grid {
                 let mut position: Position = piece_position;
                 position.x = (position.x as i8 + i) as usize;
                 position.y = (position.y as i8 + i) as usize;
-                if grid[position].piece_type != Pieces::None {
+                if grid[position] != Pieces::None {
                     return true;
                 }
             }
@@ -588,60 +399,61 @@ impl Grid {
                 let mut position: Position = piece_position;
                 position.x = (position.x as i8 + i) as usize;
                 position.y = (position.y as i8 + i) as usize;
-                if grid[position].piece_type != Pieces::None {
+                if grid[position] != Pieces::None {
                     return true;
                 }
             }
             false
         }
+        let piece = self[start_position];
         //PAWN
-        if piece.piece_type == Pieces::BlackPawn || piece.piece_type == Pieces::WhitePawn {
-            return check_vertically(self, piece.position, y_move);
+        if piece == Pieces::BlackPawn || piece == Pieces::WhitePawn {
+            return check_vertically(self, start_position, y_move);
         }
         //ROOK
-        if piece.piece_type == Pieces::BlackRook || piece.piece_type == Pieces::WhiteRook {
+        if piece == Pieces::BlackRook || piece == Pieces::WhiteRook {
             if x_move == 0 {
-                return check_vertically(self, piece.position, y_move);
+                return check_vertically(self, start_position, y_move);
             }
-            return check_horizontally(self, piece.position, x_move);
+            return check_horizontally(self, start_position, x_move);
         }
         //BISHOP
-        if piece.piece_type == Pieces::BlackBishop || piece.piece_type == Pieces::WhiteBishop {
+        if piece == Pieces::BlackBishop || piece == Pieces::WhiteBishop {
             if (x_move + y_move) == 0i8 {
-                return check_diagonally_pos(self, piece.position, x_move);
+                return check_diagonally_pos(self, start_position, x_move);
             }
-            return check_diagonally_neg(self, piece.position, x_move);
+            return check_diagonally_neg(self, start_position, x_move);
         }
         //QUEEN
-        if piece.piece_type == Pieces::BlackQueen || piece.piece_type == Pieces::WhiteQueen {
+        if piece == Pieces::BlackQueen || piece == Pieces::WhiteQueen {
             if (x_move + y_move) == 0i8 {
-                return check_diagonally_pos(self, piece.position, x_move);
+                return check_diagonally_pos(self, start_position, x_move);
             } else if (x_move - y_move) == 0i8 {
-                return check_diagonally_neg(self, piece.position, x_move);
+                return check_diagonally_neg(self, start_position, x_move);
             } else if x_move == 0 {
-                return check_vertically(self, piece.position, y_move);
+                return check_vertically(self, start_position, y_move);
             }
-            return check_horizontally(self, piece.position, x_move);
+            return check_horizontally(self, start_position, x_move);
         }
         //KING
-        if piece.piece_type == Pieces::BlackKing || piece.piece_type == Pieces::WhiteKing {
-            return check_horizontally(self, piece.position, y_move);
+        if piece == Pieces::BlackKing || piece == Pieces::WhiteKing {
+            return check_horizontally(self, start_position, y_move);
         }
         false
     }
     fn in_check(&self, attacker: bool) -> bool {
-        let attacking_pieces: Vec<Piece>;
-        let defending_king: Piece;
+        let attacking_pieces_positions: Vec<Position>;
+        let defending_king_position: Position;
         if attacker {
-            attacking_pieces = self.get_white_pieces();
-            defending_king = self.get_black_king();
+            attacking_pieces_positions = self.get_white_pieces_pos();
+            defending_king_position = self.get_black_king_pos();
         } else {
-            attacking_pieces = self.get_black_pieces();
-            defending_king = self.get_white_king();
+            attacking_pieces_positions = self.get_black_pieces_pos();
+            defending_king_position = self.get_white_king_pos();
         }
 
-        for piece in attacking_pieces {
-            if self.is_move_valid(piece, defending_king.position) {
+        for piece_position in attacking_pieces_positions {
+            if self.is_move_valid(piece_position, defending_king_position) {
                 return true;
             }
         }
@@ -657,7 +469,7 @@ impl Grid {
 }
 
 impl Index<(usize, usize)> for Grid {
-    type Output = Piece;
+    type Output = Pieces;
 
     fn index(&self, (col, row): (usize, usize)) -> &Self::Output {
         &self.items[8 * row + col]
@@ -665,7 +477,7 @@ impl Index<(usize, usize)> for Grid {
 }
 
 impl Index<Position> for Grid {
-    type Output = Piece;
+    type Output = Pieces;
 
     fn index(&self, position: Position) -> &Self::Output {
         &self.items[8 * position.y + position.x]
@@ -683,5 +495,3 @@ impl IndexMut<Position> for Grid {
         &mut self.items[8 * position.y + position.x]
     }
 }
-
-pub type Board = Arc<Mutex<Grid>>;
