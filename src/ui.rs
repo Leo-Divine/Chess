@@ -5,7 +5,7 @@ use crate::{
 use iced::{
     color,
     widget::{container, mouse_area, row, svg, text, Column, Container, Row, Text},
-    window::{settings::PlatformSpecific, Level, Settings},
+    window::{settings::PlatformSpecific, icon::from_file, Icon, Level, Settings},
     Alignment, Element, Length, Point, Size, Theme,
 };
 
@@ -154,6 +154,7 @@ impl UI {
         previous_moves
     }
     pub fn window() -> Settings {
+        let icon: Result<Icon, iced::window::icon::Error> = from_file("src/BlackKnight.png");
         Settings {
             size: Size::new(1200.0, 800.0),
             position: iced::window::Position::Default,
@@ -164,7 +165,7 @@ impl UI {
             decorations: true,
             transparent: true,
             level: Level::Normal,
-            icon: None,
+            icon: Some(icon.unwrap()),
             platform_specific: PlatformSpecific::default(),
             exit_on_close_request: true,
         }
