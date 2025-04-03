@@ -126,6 +126,28 @@ impl Board {
                     && attacked_piece.piece_type != PieceType::None)
             {
                 return !self.is_jumping_vertically(moved_piece, y_move);
+            } else if self.last_piece_moved == self[Position::new(attacked_peice.position.x, attacked_peice.position.y - 1)]
+                && self.last_piece_moved.piece_type == PieceType::Pawn
+                && self.last_piece_moved.position.y == 2
+                && x_abs == 1
+                && y_move == 1
+            {
+                self[Position::new(attacked_piece.position.x, 2)] = Piece::new(PieceType::None, Position::new(attacked_piece.position.x, 2), false);
+                self[attacked_piece.position] = Piece::new(PieceType::Pawn, attacked_piece.position, true);
+                self[moved_piece.position] = Piece::new(PieceType::None, moved_piece.position, true);
+                
+                if self.in_check(!self.white_turn) {
+                    self[Position::new(attacked_piece.position.x, 2)] = self.last_piece_moved.clone();
+                    self[attacked_piece.position] = Piece::new(PieceType::None, moved_piece.position, true);
+                    self[moved_piece.position] = moved_piece.clone();
+                    return false;
+                }
+
+                self[attacked_piece.position].has_moved = true;
+                self.white_turn = !self.white_turn;
+                self.last_piece_moved = self[attacked_piece.position].clone();
+                
+                return false;
             }
         }
         //BLACK PAWN
@@ -140,7 +162,7 @@ impl Board {
                     && attacked_piece.piece_type != PieceType::None)
             {
                 return !self.is_jumping_vertically(moved_piece, y_move);
-            } else if 
+            }
         }
         //ROOK
         if moved_piece.piece_type == PieceType::Rook {
