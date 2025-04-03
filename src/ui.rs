@@ -28,16 +28,24 @@ impl UI {
                 self.cursor_position = position;
             }
             Message::LeftButtonPressed => {
-                self.grabbed_piece_pos = Position::new(
-                    (self.cursor_position.x / 100f32).floor() as u8,
-                    (self.cursor_position.y / 100f32).floor() as u8,
-                )
-            }
-            Message::LeftButtonReleased => {
-                let new_position: Position = Position::new(
+                let position = Position::new(
                     (self.cursor_position.x / 100f32).floor() as u8,
                     (self.cursor_position.y / 100f32).floor() as u8,
                 );
+                if position.x > 7 || position.y > 7 {
+                    return;
+                }
+                self.grabbed_piece_pos = position;
+            }
+            Message::LeftButtonReleased => {
+                let position = Position::new(
+                    (self.cursor_position.x / 100f32).floor() as u8,
+                    (self.cursor_position.y / 100f32).floor() as u8,
+                );
+                if position.x > 7 || position.y > 7 {
+                    return;
+                }
+                let new_position= position;
                 self.board.move_piece(self.grabbed_piece_pos, new_position);
             }
         }
@@ -167,10 +175,10 @@ impl UI {
         Settings {
             size: Size::new(1200.0, 800.0),
             position: iced::window::Position::Default,
-            min_size: Some(Size::new(300.0, 200.0)),
+            min_size: Some(Size::new(1200.0, 800.0)),
             max_size: Some(Size::new(1200.0, 800.0)),
             visible: true,
-            resizable: true,
+            resizable: false,
             decorations: true,
             transparent: true,
             level: Level::Normal,

@@ -10,7 +10,8 @@
     - [x] Checks
     - [ ] Checkmates
 - [x] Change Pieces to Piece Struct
-- [ ] Castling (Good Luck)
+- [x] Castling (Good Luck)
+- [ ] En Passant
 ### Main
 - [x] Add results for main.rs
 ### UI
