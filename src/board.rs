@@ -4,6 +4,7 @@ use std::ops::{Index, IndexMut};
 pub struct Board {
     pieces: [Piece; 64],
     white_turn: bool,
+    last_piece_moved: Piece,
 }
 
 impl Default for Board {
@@ -76,6 +77,7 @@ impl Default for Board {
                 Piece::new(PieceType::Rook, Position::new(7, 7), true),
             ],
             white_turn: true,
+            last_piece_moved: Piece::new(PieceType::None, Position::new(0, 0), false),
         }
     }
 }
@@ -104,6 +106,7 @@ impl Board {
         }
         self[new_position].has_moved = true;
         self.white_turn = !self.white_turn;
+        self.last_piece_moved = self[new_position].clone();
     }
     pub fn is_move_valid(&mut self, moved_piece: Piece, attacked_piece: Piece) -> bool {
         let x_move: i8 = (attacked_piece.position.x as i8) - (moved_piece.position.x as i8);
@@ -137,7 +140,7 @@ impl Board {
                     && attacked_piece.piece_type != PieceType::None)
             {
                 return !self.is_jumping_vertically(moved_piece, y_move);
-            }
+            } else if 
         }
         //ROOK
         if moved_piece.piece_type == PieceType::Rook {
@@ -249,6 +252,7 @@ impl Board {
             self[Position::new(7, 7)] = Piece::new(PieceType::None, Position::new(7, 7), true);
             self[Position::new(6, 7)].has_moved = true;
             self[Position::new(5, 7)].has_moved = true;
+            self.last_piece_moved = self[Position::new(6, 7)].clone();
         } else {
             self[Position::new(5, 0)] = Piece::new(PieceType::King, Position::new(5, 0), false);
             self[Position::new(4, 0)] = Piece::new(PieceType::None, Position::new(4, 0), false);
@@ -268,6 +272,7 @@ impl Board {
             self[Position::new(7, 0)] = Piece::new(PieceType::None, Position::new(7, 0), false);
             self[Position::new(6, 0)].has_moved = true;
             self[Position::new(5, 0)].has_moved = true;
+            self.last_piece_moved = self[Position::new(6, 0)].clone();
         }
         self.white_turn = !self.white_turn;
     }
@@ -298,6 +303,7 @@ impl Board {
             self[Position::new(0, 7)] = Piece::new(PieceType::None, Position::new(0, 7), true);
             self[Position::new(1, 7)].has_moved = true;
             self[Position::new(2, 7)].has_moved = true;
+            self.last_piece_moved = self[Position::new(1, 7)].clone();
         } else {
             self[Position::new(3, 0)] = Piece::new(PieceType::King, Position::new(3, 0), false);
             self[Position::new(4, 0)] = Piece::new(PieceType::None, Position::new(4, 0), false);
@@ -324,6 +330,7 @@ impl Board {
             self[Position::new(0, 0)] = Piece::new(PieceType::None, Position::new(0, 0), false);
             self[Position::new(1, 0)].has_moved = true;
             self[Position::new(2, 0)].has_moved = true;
+            self.last_piece_moved = self[Position::new(1, 0)].clone();
         }
         self.white_turn = !self.white_turn;
     }
