@@ -1,7 +1,8 @@
 use iced::Point;
 use ui::UI;
 
-mod grid;
+mod board;
+mod piece;
 mod ui;
 
 fn main() -> iced::Result {

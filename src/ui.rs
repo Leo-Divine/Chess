@@ -1,17 +1,14 @@
-use crate::{
-    grid::{Grid, Position},
-    Message,
-};
+use crate::{board::Board, piece::Position, Message};
 use iced::{
     color,
     widget::{container, mouse_area, row, svg, text, Column, Container, Row, Text},
-    window::{settings::PlatformSpecific, icon::from_file, Icon, Level, Settings},
+    window::{icon::from_file, settings::PlatformSpecific, Icon, Level, Settings},
     Alignment, Element, Length, Point, Size, Theme,
 };
 
 #[derive(Default)]
 pub struct UI {
-    board: Grid,
+    board: Board,
     cursor_active: bool,
     cursor_position: Point,
     grabbed_piece_pos: Position,
@@ -32,20 +29,16 @@ impl UI {
             }
             Message::LeftButtonPressed => {
                 self.grabbed_piece_pos = Position::new(
-                    (self.cursor_position.x / 100f32).floor() as usize,
-                    (self.cursor_position.y / 100f32).floor() as usize,
+                    (self.cursor_position.x / 100f32).floor() as u8,
+                    (self.cursor_position.y / 100f32).floor() as u8,
                 )
             }
             Message::LeftButtonReleased => {
                 let new_position: Position = Position::new(
-                    (self.cursor_position.x / 100f32).floor() as usize,
-                    (self.cursor_position.y / 100f32).floor() as usize,
+                    (self.cursor_position.x / 100f32).floor() as u8,
+                    (self.cursor_position.y / 100f32).floor() as u8,
                 );
-
-                match self.board.move_piece(self.grabbed_piece_pos, new_position) {
-                    Some(notation) => self.previous_moves.push(notation),
-                    None => println!("Invalid Move"),
-                };
+                self.board.move_piece(self.grabbed_piece_pos, new_position);
             }
         }
     }
@@ -58,15 +51,23 @@ impl UI {
             let mut even_row = Row::new();
             for r in 0..4 {
                 let white_container: Container<'_, Message> = container(svg(format!(
-                    "src/pieces/{:?}.svg",
-                    self.board[(r * 2, c * 2)]
+                    "src/pieces/{}{:?}.svg",
+                    match self.board[Position::new(r * 2, c * 2)].is_white {
+                        true => "White",
+                        false => "Black",
+                    },
+                    self.board[Position::new(r * 2, c * 2)].piece_type
                 )))
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
                 .style(|_theme: &Theme| container::Style::default().background(color!(0xE3C16F)));
                 let black_container: Container<'_, Message> = container(svg(format!(
-                    "src/pieces/{:?}.svg",
-                    self.board[(r * 2 + 1, c * 2)]
+                    "src/pieces/{}{:?}.svg",
+                    match self.board[Position::new(r * 2 + 1, c * 2)].is_white {
+                        true => "White",
+                        false => "Black",
+                    },
+                    self.board[Position::new(r * 2 + 1, c * 2)].piece_type
                 )))
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
@@ -78,15 +79,23 @@ impl UI {
 
             for r in 0..4 {
                 let black_container: Container<'_, Message> = container(svg(format!(
-                    "src/pieces/{:?}.svg",
-                    self.board[(r * 2, c * 2 + 1)]
+                    "src/pieces/{}{:?}.svg",
+                    match self.board[Position::new(r * 2, c * 2 + 1)].is_white {
+                        true => "White",
+                        false => "Black",
+                    },
+                    self.board[Position::new(r * 2, c * 2 + 1)].piece_type
                 )))
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
                 .style(|_theme: &Theme| container::Style::default().background(color!(0xB88B4A)));
                 let white_container: Container<'_, Message> = container(svg(format!(
-                    "src/pieces/{:?}.svg",
-                    self.board[(r * 2 + 1, c * 2 + 1)]
+                    "src/pieces/{}{:?}.svg",
+                    match self.board[Position::new(r * 2 + 1, c * 2 + 1)].is_white {
+                        true => "White",
+                        false => "Black",
+                    },
+                    self.board[Position::new(r * 2 + 1, c * 2 + 1)].piece_type
                 )))
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
@@ -103,7 +112,7 @@ impl UI {
             .size(24)
             .width(Length::Fill)
             .align_x(Alignment::Center);
-        let turn: Text = text(self.board.get_turn())
+        let turn: Text = text!("H")
             .size(20)
             .width(Length::Fill)
             .align_x(Alignment::Center);
