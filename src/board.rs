@@ -116,20 +116,6 @@ impl Board {
 
         //WHITE PAWN
         if moved_piece.piece_type == PieceType::Pawn && moved_piece.is_white {
-            println!(
-                "{:?}, {}, ({}, {})",
-                moved_piece.piece_type,
-                moved_piece.is_white,
-                moved_piece.position.x,
-                moved_piece.position.y
-            );
-            println!(
-                "{:?}, {}, ({}, {})",
-                attacked_piece.piece_type,
-                attacked_piece.is_white,
-                attacked_piece.position.x,
-                attacked_piece.position.y
-            );
             if (y_move == -1 && x_move == 0 && attacked_piece.piece_type == PieceType::None)
                 || (!moved_piece.has_moved
                     && y_move == -2
@@ -141,16 +127,16 @@ impl Board {
             {
                 return !self.is_jumping_vertically(moved_piece, y_move);
             } else if self.last_piece_moved.piece_type == PieceType::Pawn
-                && self.last_piece_moved.position.y == 2
+                && self.last_piece_moved.position.y == 3
                 && x_abs == 1
-                && y_move == 1
+                && y_move == -1
             {
-                if self.last_piece_moved
-                    == self[Position::new(attacked_piece.position.x, attacked_piece.position.y - 1)]
+                if self.last_piece_moved.position
+                    == Position::new(attacked_piece.position.x, attacked_piece.position.y + 1)
                 {
-                    self[Position::new(attacked_piece.position.x, 2)] = Piece::new(
+                    self[Position::new(attacked_piece.position.x, 3)] = Piece::new(
                         PieceType::None,
-                        Position::new(attacked_piece.position.x, 2),
+                        Position::new(attacked_piece.position.x, 3),
                         false,
                     );
                     self[attacked_piece.position] =
@@ -159,7 +145,7 @@ impl Board {
                         Piece::new(PieceType::None, moved_piece.position, true);
 
                     if self.in_check(!self.white_turn) {
-                        self[Position::new(attacked_piece.position.x, 2)] =
+                        self[Position::new(attacked_piece.position.x, 3)] =
                             self.last_piece_moved.clone();
                         self[attacked_piece.position] =
                             Piece::new(PieceType::None, moved_piece.position, true);
@@ -187,6 +173,39 @@ impl Board {
                     && attacked_piece.piece_type != PieceType::None)
             {
                 return !self.is_jumping_vertically(moved_piece, y_move);
+            } else if self.last_piece_moved.piece_type == PieceType::Pawn
+                && self.last_piece_moved.position.y == 4
+                && x_abs == 1
+                && y_move == 1
+            {
+                if self.last_piece_moved.position
+                    == Position::new(attacked_piece.position.x, attacked_piece.position.y - 1)
+                {
+                    self[Position::new(attacked_piece.position.x, 4)] = Piece::new(
+                        PieceType::None,
+                        Position::new(attacked_piece.position.x, 4),
+                        false,
+                    );
+                    self[attacked_piece.position] =
+                        Piece::new(PieceType::Pawn, attacked_piece.position, false);
+                    self[moved_piece.position] =
+                        Piece::new(PieceType::None, moved_piece.position, true);
+
+                    if self.in_check(self.white_turn) {
+                        self[Position::new(attacked_piece.position.x, 4)] =
+                            self.last_piece_moved.clone();
+                        self[attacked_piece.position] =
+                            Piece::new(PieceType::None, moved_piece.position, true);
+                        self[moved_piece.position] = moved_piece.clone();
+                        return false;
+                    }
+
+                    self[attacked_piece.position].has_moved = true;
+                    self.white_turn = !self.white_turn;
+                    self.last_piece_moved = self[attacked_piece.position].clone();
+
+                    return false;
+                }
             }
         }
         //ROOK
