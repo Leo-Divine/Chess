@@ -21,7 +21,7 @@ pub enum PieceType {
     King,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Piece {
     pub piece_type: PieceType,
     pub position: Position,
