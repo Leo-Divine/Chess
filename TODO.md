@@ -6,9 +6,9 @@
 - [x] Add Proper Pawn Movement
     - [X] Pawn Capturing
     - [x] Prevent Forward Pawn Captures
-- [ ] Add Checks and Checkmates
+- [x] Add Checks and Checkmates
     - [x] Checks
-    - [ ] Checkmates
+    - [x] Checkmates
 - [x] Change Pieces to Piece Struct
 - [x] Castling (Good Luck)
 - [x] En Passant

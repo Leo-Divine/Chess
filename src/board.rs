@@ -1,6 +1,15 @@
 use crate::piece::{starting_pieces, Piece, PieceType, Position};
 use std::ops::{Index, IndexMut};
 
+#[derive(PartialEq)]
+enum MoveValidity {
+    Valid,
+    ShortCastle,
+    LongCastle,
+    EnPassant,
+    Invalid,
+}
+
 pub struct Board {
     pieces: [Piece; 64],
     pub white_turn: bool,
@@ -19,6 +28,7 @@ impl Default for Board {
     }
 }
 impl Board {
+    ///Tries to move a piece given a start and end position.
     pub fn move_piece(&mut self, old_position: Position, new_position: Position) -> Option<String> {
         self.previous_pieces = self.pieces;
 
@@ -26,15 +36,22 @@ impl Board {
         let attacked_piece: Piece = self[new_position];
         let mut piece_captured = false;
         let mut check_checkmate = "";
+        let mut en_passant = false;
 
         if moved_piece.piece_type == PieceType::None
             || old_position == new_position
             || self.white_turn != moved_piece.is_white
-            || !self.is_move_valid(moved_piece, attacked_piece)
             || (self.white_turn == attacked_piece.is_white
                 && attacked_piece.piece_type != PieceType::None)
         {
             return None;
+        }
+        match self.is_move_valid(moved_piece, attacked_piece) {
+            MoveValidity::Valid => (),
+            MoveValidity::EnPassant => en_passant = true,
+            MoveValidity::ShortCastle => return Some("O-O".to_string()),
+            MoveValidity::LongCastle => return Some("O-O-O".to_string()),
+            MoveValidity::Invalid => return None,
         }
 
         if attacked_piece.piece_type != PieceType::None {
@@ -42,16 +59,17 @@ impl Board {
         }
 
         self.do_move(moved_piece, attacked_piece);
-        if self.in_check(!self.white_turn) {
+        if self.in_check(self.white_turn) {
             self.undo_move();
             return None;
         }
         self.white_turn = !self.white_turn;
         self.last_piece_moved = self[new_position];
+        self.previous_pieces = self.pieces;
 
-        if self.in_check(!self.white_turn) {
+        if self.in_check(self.white_turn) {
             check_checkmate = "+";
-            if self.is_checkmate(!self.white_turn) {
+            if self.is_checkmate(self.white_turn) {
                 check_checkmate = "#";
             }
         }
@@ -59,9 +77,11 @@ impl Board {
             moved_piece,
             attacked_piece,
             piece_captured,
-            String::from(check_checkmate),
+            en_passant,
+            check_checkmate.to_string(),
         ))
     }
+    ///Moves a piece to a specified location.
     fn do_move(&mut self, moved_piece: Piece, attacked_piece: Piece) {
         self[attacked_piece.position] = Piece {
             piece_type: moved_piece.piece_type,
@@ -71,10 +91,12 @@ impl Board {
         };
         self[moved_piece.position] = Piece::new(PieceType::None, moved_piece.position, true);
     }
+    ///Sets the board back to the last move.
     fn undo_move(&mut self) {
         self.pieces = self.previous_pieces;
     }
-    fn is_move_valid(&mut self, moved_piece: Piece, attacked_piece: Piece) -> bool {
+    ///Verifies if a given piece can move to the given position acording to it's movement options.
+    fn is_move_valid(&mut self, moved_piece: Piece, attacked_piece: Piece) -> MoveValidity {
         let x_move: i8 = (attacked_piece.position.x as i8) - (moved_piece.position.x as i8);
         let y_move: i8 = (attacked_piece.position.y as i8) - (moved_piece.position.y as i8);
         let x_abs: i8 = x_move.abs();
@@ -92,7 +114,10 @@ impl Board {
                     && (x_move == -1 || x_move == 1)
                     && attacked_piece.piece_type != PieceType::None)
             {
-                return !self.is_jumping_vertically(moved_piece, y_move);
+                match self.is_jumping_vertically(moved_piece, y_move) {
+                    true => return MoveValidity::Invalid,
+                    false => return MoveValidity::Valid,
+                }
             } else if self.last_piece_moved.piece_type == PieceType::Pawn
                 && self.last_piece_moved.position.y == 3
                 && x_abs == 1
@@ -107,14 +132,12 @@ impl Board {
                         false,
                     );
                     self.do_move(moved_piece, attacked_piece);
-                    if self.in_check(!self.white_turn) {
+                    if self.in_check(self.white_turn) {
                         self.undo_move();
-                        return false;
+                        return MoveValidity::Invalid;
                     }
-                    self.white_turn = !self.white_turn;
                     self.last_piece_moved = self[attacked_piece.position];
-
-                    return false;
+                    return MoveValidity::EnPassant;
                 }
             }
         }
@@ -130,7 +153,10 @@ impl Board {
                     && (x_move == -1 || x_move == 1)
                     && attacked_piece.piece_type != PieceType::None)
             {
-                return !self.is_jumping_vertically(moved_piece, y_move);
+                match self.is_jumping_vertically(moved_piece, y_move) {
+                    true => return MoveValidity::Invalid,
+                    false => return MoveValidity::Valid,
+                }
             } else if self.last_piece_moved.piece_type == PieceType::Pawn
                 && self.last_piece_moved.position.y == 4
                 && x_abs == 1
@@ -148,47 +174,69 @@ impl Board {
 
                     if self.in_check(self.white_turn) {
                         self.undo_move();
-                        return false;
+                        return MoveValidity::Invalid;
                     }
-                    self.white_turn = !self.white_turn;
                     self.last_piece_moved = self[attacked_piece.position];
-
-                    return false;
+                    return MoveValidity::EnPassant;
                 }
             }
         }
         //ROOK
         if moved_piece.piece_type == PieceType::Rook {
             if moved_piece.position.x == attacked_piece.position.x {
-                return !self.is_jumping_vertically(moved_piece, y_move);
+                match self.is_jumping_vertically(moved_piece, y_move) {
+                    true => return MoveValidity::Invalid,
+                    false => return MoveValidity::Valid,
+                }
             } else if moved_piece.position.y == attacked_piece.position.y {
-                return !self.is_jumping_horizontally(moved_piece, x_move);
+                match self.is_jumping_horizontally(moved_piece, x_move) {
+                    true => return MoveValidity::Invalid,
+                    false => return MoveValidity::Valid,
+                }
             }
         }
         //KNIGHT
         if moved_piece.piece_type == PieceType::Knight
             && ((x_abs == 2 && y_abs == 1) || (x_abs == 1 && y_abs == 2))
         {
-            return true;
+            return MoveValidity::Valid;
         }
         //BISHOP
         if moved_piece.piece_type == PieceType::Bishop {
             if (x_move + y_move) == 0i8 {
-                return !self.is_jumping_diagonally_pos(moved_piece, x_move);
+                match self.is_jumping_diagonally_pos(moved_piece, x_move) {
+                    true => return MoveValidity::Invalid,
+                    false => return MoveValidity::Valid,
+                }
             } else if (x_move - y_move) == 0i8 {
-                return !self.is_jumping_diagonally_neg(moved_piece, x_move);
+                match self.is_jumping_diagonally_neg(moved_piece, x_move) {
+                    true => return MoveValidity::Invalid,
+                    false => return MoveValidity::Valid,
+                }
             }
         }
         //QUEEN
         if moved_piece.piece_type == PieceType::Queen {
             if moved_piece.position.x == attacked_piece.position.x {
-                return !self.is_jumping_vertically(moved_piece, y_move);
+                match self.is_jumping_vertically(moved_piece, y_move) {
+                    true => return MoveValidity::Invalid,
+                    false => return MoveValidity::Valid,
+                }
             } else if moved_piece.position.y == attacked_piece.position.y {
-                return !self.is_jumping_horizontally(moved_piece, x_move);
+                match self.is_jumping_horizontally(moved_piece, x_move) {
+                    true => return MoveValidity::Invalid,
+                    false => return MoveValidity::Valid,
+                }
             } else if (x_move + y_move) == 0i8 {
-                return !self.is_jumping_diagonally_pos(moved_piece, x_move);
+                match self.is_jumping_diagonally_pos(moved_piece, x_move) {
+                    true => return MoveValidity::Invalid,
+                    false => return MoveValidity::Valid,
+                }
             } else if (x_move - y_move) == 0i8 {
-                return !self.is_jumping_diagonally_neg(moved_piece, x_move);
+                match self.is_jumping_diagonally_neg(moved_piece, x_move) {
+                    true => return MoveValidity::Invalid,
+                    false => return MoveValidity::Valid,
+                }
             }
         }
         //WHITE KING
@@ -197,25 +245,31 @@ impl Board {
                 || (x_abs == 1 && y_abs == 0)
                 || (x_abs == 1 && y_abs == 1)
             {
-                return true;
+                return MoveValidity::Valid;
             } else if x_move == 2
                 && y_move == 0
                 && !moved_piece.has_moved
                 && self[Position::new(7, 7)].piece_type == PieceType::Rook
                 && !self[Position::new(7, 7)].has_moved
                 && !self.is_jumping_horizontally(moved_piece, x_move)
+                && !self.in_check(true)
             {
-                self.short_castling_checks(true);
-                return false;
+                match self.short_castling_checks(true) {
+                    true => return MoveValidity::Invalid,
+                    false => return MoveValidity::ShortCastle,
+                }
             } else if x_move == -3
                 && y_move == 0
                 && !moved_piece.has_moved
                 && self[Position::new(0, 7)].piece_type == PieceType::Rook
                 && !self[Position::new(0, 7)].has_moved
                 && !self.is_jumping_horizontally(moved_piece, x_move)
+                && !self.in_check(true)
             {
-                self.long_castling_checks(true);
-                return false;
+                match self.long_castling_checks(true) {
+                    true => return MoveValidity::Invalid,
+                    false => return MoveValidity::LongCastle,
+                }
             }
         }
         //BLACK KING
@@ -224,39 +278,46 @@ impl Board {
                 || (x_abs == 1 && y_abs == 0)
                 || (x_abs == 1 && y_abs == 1)
             {
-                return true;
+                return MoveValidity::Valid;
             } else if x_move == 2
                 && y_move == 0
                 && !moved_piece.has_moved
                 && self[Position::new(7, 0)].piece_type == PieceType::Rook
                 && !self[Position::new(7, 0)].has_moved
                 && !self.is_jumping_horizontally(moved_piece, x_move)
+                && !self.in_check(false)
             {
-                self.short_castling_checks(false);
-                return false;
+                match self.short_castling_checks(false) {
+                    true => return MoveValidity::Invalid,
+                    false => return MoveValidity::ShortCastle,
+                }
             } else if x_move == -3
                 && y_move == 0
                 && !moved_piece.has_moved
                 && self[Position::new(0, 0)].piece_type == PieceType::Rook
                 && !self[Position::new(0, 0)].has_moved
                 && !self.is_jumping_horizontally(moved_piece, x_move)
+                && !self.in_check(false)
             {
-                self.long_castling_checks(false);
-                return false;
+                match self.long_castling_checks(false) {
+                    true => return MoveValidity::Invalid,
+                    false => return MoveValidity::LongCastle,
+                }
             }
         }
-        false
+        MoveValidity::Invalid
     }
-    fn short_castling_checks(&mut self, is_white: bool) {
+    ///Attempts to castle short, and moves the pieces if successful.
+    fn short_castling_checks(&mut self, is_white: bool) -> bool {
         if is_white {
             for x in 4..6 {
                 self.do_move(
                     Piece::new(PieceType::King, Position::new(x, 7), true),
                     Piece::new(PieceType::None, Position::new(x + 1, 7), true),
                 );
-                if self.in_check(!self.white_turn) {
+                if self.in_check(true) {
                     self.undo_move();
-                    return;
+                    return true;
                 }
             }
             self.do_move(
@@ -270,9 +331,9 @@ impl Board {
                     Piece::new(PieceType::King, Position::new(x, 0), false),
                     Piece::new(PieceType::None, Position::new(x + 1, 0), false),
                 );
-                if self.in_check(!self.white_turn) {
+                if self.in_check(false) {
                     self.undo_move();
-                    return;
+                    return true;
                 }
             }
             self.do_move(
@@ -282,17 +343,19 @@ impl Board {
             self.last_piece_moved = self[Position::new(6, 0)];
         }
         self.white_turn = !self.white_turn;
+        false
     }
-    fn long_castling_checks(&mut self, is_white: bool) {
+    ///Attempts to castle long, and moves the pieces if successful.
+    fn long_castling_checks(&mut self, is_white: bool) -> bool {
         if is_white {
             for x in (2..5).rev() {
                 self.do_move(
                     Piece::new(PieceType::King, Position::new(x, 7), true),
                     Piece::new(PieceType::None, Position::new(x - 1, 7), true),
                 );
-                if self.in_check(!self.white_turn) {
+                if self.in_check(true) {
                     self.undo_move();
-                    return;
+                    return true;
                 }
             }
             self.do_move(
@@ -306,9 +369,9 @@ impl Board {
                     Piece::new(PieceType::King, Position::new(x, 0), false),
                     Piece::new(PieceType::None, Position::new(x - 1, 0), false),
                 );
-                if self.in_check(!self.white_turn) {
+                if self.in_check(false) {
                     self.undo_move();
-                    return;
+                    return true;
                 }
             }
             self.do_move(
@@ -318,7 +381,9 @@ impl Board {
             self.last_piece_moved = self[Position::new(1, 0)];
         }
         self.white_turn = !self.white_turn;
+        false
     }
+    ///Checks if a specified move jumps over another piece horizontally.
     fn is_jumping_horizontally(&self, piece: Piece, x_move: i8) -> bool {
         for i in 1..x_move {
             let mut position: Position = piece.position;
@@ -339,6 +404,7 @@ impl Board {
         }
         false
     }
+    ///Checks if a specified move jumps over another piece vertically.
     fn is_jumping_vertically(&self, piece: Piece, y_move: i8) -> bool {
         for i in 1..y_move {
             let mut position: Position = piece.position;
@@ -359,6 +425,7 @@ impl Board {
         }
         false
     }
+    ///Checks if a specified move jumps over another piece diagonally with a positive slope.
     fn is_jumping_diagonally_pos(&self, piece: Piece, x_move: i8) -> bool {
         for i in 1..x_move {
             let mut position: Position = piece.position;
@@ -381,6 +448,7 @@ impl Board {
         }
         false
     }
+    ///Checks if a specified move jumps over another piece diagonally with a negative slope.
     fn is_jumping_diagonally_neg(&self, piece: Piece, x_move: i8) -> bool {
         for i in 1..x_move {
             let mut position: Position = piece.position;
@@ -403,75 +471,61 @@ impl Board {
         }
         false
     }
-    ///Checks if the current board has a side in check
-    fn in_check(&mut self, white_attacking: bool) -> bool {
-        let defending_king: Piece = self.get_defending_king(white_attacking);
-        if self.is_check(defending_king) {
-            return true;
-        }
-        false
-    }
-    ///Checks if a kings given position puts it into check
-    fn is_check(&mut self, defending_king: Piece) -> bool {
-        let attacking_pieces: Vec<Piece> = self.get_all_color_pieces(!defending_king.is_white);
+    ///Checks if the given side is in check.
+    fn in_check(&mut self, king_is_white: bool) -> bool {
+        let attacking_pieces: Vec<Piece> = self.get_all_color_pieces(!king_is_white);
+        let defending_king: Piece = self.get_king(king_is_white);
         for piece in attacking_pieces {
-            if self.is_move_valid(piece, defending_king) {
+            if self.is_move_valid(piece, defending_king) == MoveValidity::Valid {
                 return true;
             }
         }
         false
     }
+    ///Returns all pieces of a specified color/side.
     fn get_all_color_pieces(&self, white: bool) -> Vec<Piece> {
         self.pieces
             .iter()
-            .filter(|piece| piece.is_white == white)
+            .filter(|piece| piece.is_white == white && piece.piece_type != PieceType::None)
             .cloned()
             .collect()
     }
-    fn get_defending_king(&self, white_attacking: bool) -> Piece {
-        if white_attacking {
-            *self
-                .pieces
-                .iter()
-                .find(|piece| !piece.is_white && piece.piece_type == PieceType::King)
-                .unwrap()
-        } else {
-            *self
-                .pieces
-                .iter()
-                .find(|piece| piece.is_white && piece.piece_type == PieceType::King)
-                .unwrap()
-        }
+    ///Returns the king of the specified color/side.
+    fn get_king(&self, king_is_white: bool) -> Piece {
+        *self
+            .pieces
+            .iter()
+            .find(|piece| piece.is_white == king_is_white && piece.piece_type == PieceType::King)
+            .unwrap()
     }
+    ///Checks if the side in check is in checkmate.
     fn is_checkmate(&mut self, white_in_check: bool) -> bool {
         let defending_pieces: Vec<Piece> = self.get_all_color_pieces(white_in_check);
         for col in 0u8..8u8 {
             for row in 0u8..8u8 {
                 let attacked_piece = self[Position::new(row, col)];
-                for defending_piece in &defending_pieces {
-                    if self.is_move_valid(*defending_piece, attacked_piece)
-                        && (self.white_turn == attacked_piece.is_white
+                for moved_piece in &defending_pieces {
+                    if self.is_move_valid(*moved_piece, attacked_piece) == MoveValidity::Valid
+                        && !(self.white_turn == attacked_piece.is_white
                             && attacked_piece.piece_type != PieceType::None)
                     {
-                        continue;
-                    }
-                    if !self.is_check(Piece::new(
-                        PieceType::King,
-                        Position::new(row, col),
-                        defending_piece.is_white,
-                    )) {
-                        return false;
+                        self.do_move(*moved_piece, attacked_piece);
+                        match self.in_check(white_in_check) {
+                            true => { self.undo_move(); continue; },
+                            false => { self.undo_move(); return false; },
+                        }
                     }
                 }
             }
         }
-
         true
     }
+    ///Returns the piece notation for the played move.
     fn make_piece_notation(
         moved_piece: Piece,
         attacked_piece: Piece,
         piece_captured: bool,
+        en_passant: bool,
         check_checkmate: String,
     ) -> String {
         let mut piece: String = match moved_piece.piece_type {
@@ -486,7 +540,7 @@ impl Board {
             piece = ((moved_piece.position.x + 97) as char).to_string()
         }
         format!(
-            "{}{}{}{}{}",
+            "{}{}{}{}{}{}",
             piece,
             match piece_captured {
                 true => "x",
@@ -494,7 +548,11 @@ impl Board {
             },
             (attacked_piece.position.x + 97) as char,
             8 - attacked_piece.position.y,
-            check_checkmate
+            match en_passant {
+                true => " e.p.",
+                false => "",
+            },
+            check_checkmate,
         )
     }
 }

@@ -5,6 +5,7 @@ pub struct Position {
 }
 
 impl Position {
+    ///Returns a position with the given x and y values.
     pub fn new(x: u8, y: u8) -> Self {
         Self { x, y }
     }
@@ -30,6 +31,7 @@ pub struct Piece {
 }
 
 impl Piece {
+    ///Creates a new piece.
     pub fn new(piece_type: PieceType, position: Position, is_white: bool) -> Self {
         Self {
             piece_type,
@@ -40,6 +42,7 @@ impl Piece {
     }
 }
 
+///Returns the starting positions of the pieces.
 pub fn starting_pieces() -> [Piece; 64] {
     [
         Piece::new(PieceType::Rook, Position::new(0, 0), false),
