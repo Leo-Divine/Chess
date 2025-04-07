@@ -45,8 +45,11 @@ impl UI {
                 if position.x > 7 || position.y > 7 {
                     return;
                 }
-                let new_position= position;
-                self.board.move_piece(self.grabbed_piece_pos, new_position);
+                let new_position = position;
+                match self.board.move_piece(self.grabbed_piece_pos, new_position) {
+                    Some(notation) => self.previous_moves.push(notation),
+                    None => println!("Invalid Move"),
+                };
             }
         }
     }
@@ -120,10 +123,16 @@ impl UI {
             .size(24)
             .width(Length::Fill)
             .align_x(Alignment::Center);
-        let turn: Text = text!("H")
-            .size(20)
-            .width(Length::Fill)
-            .align_x(Alignment::Center);
+        let turn: Text = text!(
+            "{}",
+            match self.board.white_turn {
+                true => "It's White's Turn",
+                false => "It's Black's Turn",
+            }
+        )
+        .size(20)
+        .width(Length::Fill)
+        .align_x(Alignment::Center);
         let previous_moves = self
             .make_previous_moves_table()
             .width(Length::Fill)
