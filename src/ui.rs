@@ -45,7 +45,8 @@ impl UI {
                 if position.x > 7 || position.y > 7 {
                     return;
                 }
-                let new_position= position;
+                let new_position = position;
+                println!("{}, {}", self.grabbed_piece_pos.x, self.grabbed_piece_pos.y);
                 self.board.move_piece(self.grabbed_piece_pos, new_position);
             }
         }

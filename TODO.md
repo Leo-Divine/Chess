@@ -11,7 +11,7 @@
     - [ ] Checkmates
 - [x] Change Pieces to Piece Struct
 - [x] Castling (Good Luck)
-- [ ] En Passant
+- [x] En Passant
 ### Main
 - [x] Add results for main.rs
 ### UI
