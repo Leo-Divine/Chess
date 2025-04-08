@@ -1,7 +1,9 @@
 use crate::{board::Board, piece::Position, Message};
 use iced::{
     color,
-    widget::{container, mouse_area, row, svg, text, Column, Container, Row, Text},
+    widget::{
+        column, container, mouse_area, row, scrollable, scrollable::{Direction, Scrollbar}, svg, text, Button, Column, Container, MouseArea, Row, Space, Text
+    },
     window::{icon::from_file, settings::PlatformSpecific, Icon, Level, Settings},
     Alignment, Element, Length, Point, Size, Theme,
 };
@@ -51,10 +53,65 @@ impl UI {
                     None => println!("Invalid Move"),
                 };
             }
+            Message::RestartButtonPressed => {
+                self.board = Board::default();
+                self.previous_moves.clear();
+            }
         }
     }
     pub fn view(&self) -> Element<'_, Message> {
         let mut screen = Row::new();
+        screen = screen.push(self.make_chess_board());
+        let mut info_text: Column<'_, Message> = Column::new().width(Length::FillPortion(1));
+
+        let title = text("Chess")
+            .size(24)
+            .width(Length::Fill)
+            .align_x(Alignment::Center);
+
+        let turn: Text = text!(
+            "{}",
+            match self.board.white_turn {
+                true => "It's White's Turn",
+                false => "It's Black's Turn",
+            }
+        )
+        .size(20)
+        .width(Length::Fill)
+        .align_x(Alignment::Center);
+
+        let header: Column<Message> = column![row![
+            text!("#").width(50),
+            text!("White").width(50),
+            text!("Black").width(50)
+        ]
+        .spacing(40)]
+        .width(Length::Fill)
+        .align_x(Alignment::Center);
+
+        let previous_moves = scrollable(
+            self.make_previous_moves_table()
+                .width(Length::Fill)
+                .align_x(Alignment::Center),
+        )
+        .anchor_bottom()
+        .direction(Direction::Vertical(Scrollbar::new()))
+        .height(200);
+
+        let restart_button: Button<Message> = Button::new("Restart Game")
+            .width(Length::Fill)
+            .on_press(Message::RestartButtonPressed);
+
+        info_text = info_text.push(title);
+        info_text = info_text.push(turn);
+        info_text = info_text.push(header);
+        info_text = info_text.push(previous_moves);
+        info_text = info_text.push(Space::with_height(100));
+        info_text = info_text.push(restart_button);
+        screen = screen.push(info_text);
+        screen.into()
+    }
+    fn make_chess_board(&self) -> MouseArea<'_, Message> {
         let mut chess_board = Column::new().width(Length::FillPortion(2));
 
         for c in 0..4 {
@@ -72,6 +129,7 @@ impl UI {
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
                 .style(|_theme: &Theme| container::Style::default().background(color!(0xE3C16F)));
+
                 let black_container: Container<'_, Message> = container(svg(format!(
                     "src/pieces/{}{:?}.svg",
                     match self.board[Position::new(r * 2 + 1, c * 2)].is_white {
@@ -83,6 +141,7 @@ impl UI {
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
                 .style(|_theme: &Theme| container::Style::default().background(color!(0xB88B4A)));
+
                 odd_row = odd_row.push(white_container);
                 odd_row = odd_row.push(black_container);
             }
@@ -100,6 +159,7 @@ impl UI {
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
                 .style(|_theme: &Theme| container::Style::default().background(color!(0xB88B4A)));
+
                 let white_container: Container<'_, Message> = container(svg(format!(
                     "src/pieces/{}{:?}.svg",
                     match self.board[Position::new(r * 2 + 1, c * 2 + 1)].is_white {
@@ -111,54 +171,22 @@ impl UI {
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
                 .style(|_theme: &Theme| container::Style::default().background(color!(0xE3C16F)));
+
                 even_row = even_row.push(black_container);
                 even_row = even_row.push(white_container);
             }
             chess_board = chess_board.push(even_row);
         }
-        screen = screen.push(chess_board);
 
-        let mut info_text: Column<'_, Message> = Column::new().width(Length::FillPortion(1));
-        let title = text("Chess")
-            .size(24)
-            .width(Length::Fill)
-            .align_x(Alignment::Center);
-        let turn: Text = text!(
-            "{}",
-            match self.board.white_turn {
-                true => "It's White's Turn",
-                false => "It's Black's Turn",
-            }
-        )
-        .size(20)
-        .width(Length::Fill)
-        .align_x(Alignment::Center);
-        let previous_moves = self
-            .make_previous_moves_table()
-            .width(Length::Fill)
-            .align_x(Alignment::Center);
-        info_text = info_text.push(title);
-        info_text = info_text.push(turn);
-        info_text = info_text.push(previous_moves);
-        screen = screen.push(info_text);
-
-        mouse_area(screen)
+        mouse_area(chess_board)
             .on_press(Message::LeftButtonPressed)
             .on_move(Message::CursorMoved)
             .on_release(Message::LeftButtonReleased)
-            .into()
     }
     fn make_previous_moves_table(&self) -> Column<'_, Message> {
-        let box_width: u16 = 45;
+        let box_width: u16 = 50;
         let box_spacing: u16 = 40;
         let mut previous_moves: Column<'_, Message> = Column::new();
-        let header: Row<Message> = row![
-            text!("#").width(box_width),
-            text!("White").width(box_width),
-            text!("Black").width(box_width)
-        ]
-        .spacing(box_spacing);
-        previous_moves = previous_moves.push(header);
         for i in 0..self.previous_moves.len() / 2 {
             let row: Row<Message> = row![
                 text!("{}.", i + 1).width(box_width),

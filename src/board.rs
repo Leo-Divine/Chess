@@ -511,8 +511,14 @@ impl Board {
                     {
                         self.do_move(*moved_piece, attacked_piece);
                         match self.in_check(white_in_check) {
-                            true => { self.undo_move(); continue; },
-                            false => { self.undo_move(); return false; },
+                            true => {
+                                self.undo_move();
+                                continue;
+                            }
+                            false => {
+                                self.undo_move();
+                                return false;
+                            }
                         }
                     }
                 }
