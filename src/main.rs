@@ -8,6 +8,7 @@ mod ui;
 fn main() -> iced::Result {
     iced::application("Chess", UI::update, UI::view)
         .window(UI::window())
+        .subscription(UI::trigger_window_event)
         .run()
 }
 
@@ -19,4 +20,5 @@ pub enum Message {
     LeftButtonPressed,
     LeftButtonReleased,
     RestartButtonPressed,
+    WindowEventOccurred(iced::event::Event),
 }

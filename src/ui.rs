@@ -1,18 +1,20 @@
 use crate::{board::Board, piece::Position, Message};
 use iced::{
     color,
+    event::{self, Event},
     widget::{
         column, container, mouse_area, row, scrollable, scrollable::{Direction, Scrollbar}, svg, text, Button, Column, Container, MouseArea, Row, Space, Text
     },
-    window::{icon::from_file, settings::PlatformSpecific, Icon, Level, Settings},
-    Alignment, Element, Length, Point, Size, Theme,
+    window::{self, icon::from_file, settings::PlatformSpecific, Icon, Level, Settings},
+    Alignment, Element, Length, Point, Size, Theme, Subscription
 };
 
 #[derive(Default)]
 pub struct UI {
-    board: Board,
+    window_size: Size,
     cursor_active: bool,
     cursor_position: Point,
+    board: Board,
     grabbed_piece_pos: Position,
     previous_moves: Vec<String>,
 }
@@ -30,9 +32,11 @@ impl UI {
                 self.cursor_position = position;
             }
             Message::LeftButtonPressed => {
+                let box_width = self.window_size.width / 12f32;
+                let box_height = self.window_size.height / 8f32;
                 let position = Position::new(
-                    (self.cursor_position.x / 100f32).floor() as u8,
-                    (self.cursor_position.y / 100f32).floor() as u8,
+                    (self.cursor_position.x / box_width).floor() as u8,
+                    (self.cursor_position.y / box_height).floor() as u8,
                 );
                 if position.x > 7 || position.y > 7 {
                     return;
@@ -40,9 +44,11 @@ impl UI {
                 self.grabbed_piece_pos = position;
             }
             Message::LeftButtonReleased => {
+                let box_width = self.window_size.width / 12f32;
+                let box_height = self.window_size.height / 8f32;
                 let position = Position::new(
-                    (self.cursor_position.x / 100f32).floor() as u8,
-                    (self.cursor_position.y / 100f32).floor() as u8,
+                    (self.cursor_position.x / box_width).floor() as u8,
+                    (self.cursor_position.y / box_height).floor() as u8,
                 );
                 if position.x > 7 || position.y > 7 {
                     return;
@@ -56,6 +62,11 @@ impl UI {
             Message::RestartButtonPressed => {
                 self.board = Board::default();
                 self.previous_moves.clear();
+            }
+            Message::WindowEventOccurred(event) => {
+                if let Event::Window(window::Event::Resized(size)) = event {
+                    self.window_size = size;
+                }
             }
         }
     }
@@ -96,7 +107,7 @@ impl UI {
         )
         .anchor_bottom()
         .direction(Direction::Vertical(Scrollbar::new()))
-        .height(200);
+        .height(Length::FillPortion(2));
 
         let restart_button: Button<Message> = Button::new("Restart Game")
             .width(Length::Fill)
@@ -106,7 +117,7 @@ impl UI {
         info_text = info_text.push(turn);
         info_text = info_text.push(header);
         info_text = info_text.push(previous_moves);
-        info_text = info_text.push(Space::with_height(100));
+        info_text = info_text.push(Space::with_height(Length::FillPortion(1)));
         info_text = info_text.push(restart_button);
         screen = screen.push(info_text);
         screen.into()
@@ -212,10 +223,10 @@ impl UI {
         Settings {
             size: Size::new(1200.0, 800.0),
             position: iced::window::Position::Default,
-            min_size: Some(Size::new(1200.0, 800.0)),
-            max_size: Some(Size::new(1200.0, 800.0)),
+            min_size: Some(Size::new(800.0, 533.0)),
+            max_size: Some(Size::new(1800.0, 1200.0)),
             visible: true,
-            resizable: false,
+            resizable: true,
             decorations: true,
             transparent: true,
             level: Level::Normal,
@@ -223,5 +234,8 @@ impl UI {
             platform_specific: PlatformSpecific::default(),
             exit_on_close_request: true,
         }
+    }
+    pub fn trigger_window_event(&self) -> Subscription<Message> {
+        event::listen().map(Message::WindowEventOccurred)
     }
 }
