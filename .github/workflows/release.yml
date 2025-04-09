@@ -70,9 +70,7 @@ jobs:
       - name: Build Release Binary
         run: |
           export RUSTFLAGS="-C link-arg=-fuse-ld=${{ matrix.linker }} $RUSTFLAGS"
-          cargo build --release --target ${{ matrix.target }} \
-            -Z build-std=std,panic_abort \
-            -Z build-std-features=panic_immediate_abort
+          cargo build --release --target ${{ matrix.target }}
 
       - name: Prepare Artifact
         shell: bash
