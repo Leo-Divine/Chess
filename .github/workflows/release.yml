@@ -69,8 +69,7 @@ jobs:
       # Build with optimizations
       - name: Build Release Binary
         run: |
-          export RUSTFLAGS="-C link-arg=-fuse-ld=${{ matrix.linker }} $RUSTFLAGS"
-          cargo build --release --target ${{ matrix.target }}
+          cargo build --release --target ${{ matrix.target }} -- -C link-arg=-fuse-ld=${{ matrix.linker }} $RUSTFLAGS
 
       - name: Prepare Artifact
         shell: bash
