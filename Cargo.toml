@@ -3,5 +3,8 @@ name = "chess_game"
 version = "1.0.1"
 edition = "2021"
 
+[profile.release]
+panic = "abort"
+
 [dependencies]
 iced = { version = "0.13.1", features = ["svg", "advanced", "image"] }
