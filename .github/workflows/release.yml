@@ -1,8 +1,11 @@
 name: Release
-
 on:
   release:
     types: [created]
+
+env:
+  CARGO_INCREMENTAL: 0  # Disable incremental for release builds
+  RUSTFLAGS: "-C target-cpu=native"
 
 jobs:
   build:
@@ -15,13 +18,30 @@ jobs:
             target: x86_64-unknown-linux-musl
             binary_name: chess_game
             output_name: chess_game-linux-x86_64
+            linker: mold
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             binary_name: chess_game.exe
             output_name: chess_game-windows-x86_64.exe
+            linker: lld
 
     steps:
       - uses: actions/checkout@v4
+
+      # Setup cache for cargo registry and target directory
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache target directory
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-target-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install Rust Toolchain
         uses: actions-rs/toolchain@v1
@@ -29,13 +49,30 @@ jobs:
           profile: minimal
           toolchain: stable
           target: ${{ matrix.target }}
+          components: rust-src, llvm-tools-preview  # Required for LLD
 
-      - name: Install musl-tools (Linux)
+      # Linux-specific optimizations
+      - name: Install mold and musl-tools (Linux)
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install -y musl-tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools mold
+          sudo ln -sf /usr/bin/mold /usr/bin/ld
 
+      # Windows-specific optimizations
+      - name: Configure LLD linker (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo "[target.x86_64-pc-windows-msvc]" >> .cargo/config.toml
+          echo "linker = \"rust-lld.exe\"" >> .cargo/config.toml
+
+      # Build with optimizations
       - name: Build Release Binary
-        run: cargo build --release --target ${{ matrix.target }}
+        run: |
+          export RUSTFLAGS="-C link-arg=-fuse-ld=${{ matrix.linker }} $RUSTFLAGS"
+          cargo build --release --target ${{ matrix.target }} \
+            -Z build-std=std,panic_abort \
+            -Z build-std-features=panic_immediate_abort
 
       - name: Prepare Artifact
         shell: bash
