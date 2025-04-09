@@ -1,9 +1,19 @@
-use crate::{board::Board, piece::{Color, Position}, Message};
+use crate::{
+    board::Board,
+    piece::{Color, Position},
+    Message,
+};
 use iced::{
-    advanced::graphics::image::image_rs::ImageFormat, color, event::{self, Event}, widget::{
-        column, container, mouse_area, row, scrollable, scrollable::{Direction, Scrollbar},
+    advanced::graphics::image::image_rs::ImageFormat,
+    color,
+    event::{self, Event},
+    widget::{
+        column, container, mouse_area, row, scrollable,
+        scrollable::{Direction, Scrollbar},
         svg, text, Button, Column, Container, MouseArea, Row, Space, Text,
-    }, window::{self, icon::from_file_data, settings::PlatformSpecific, Icon, Level, Settings}, Alignment, Element, Length, Point, Size, Subscription, Theme
+    },
+    window::{self, icon::from_file_data, settings::PlatformSpecific, Icon, Level, Settings},
+    Alignment, Element, Length, Point, Size, Subscription, Theme,
 };
 use images::get_image;
 
@@ -80,7 +90,11 @@ impl UI {
 
         let turn: Text = text!(
             "{}",
-            if self.board.turn == Color::White { "It's White's Turn" } else { "It's Black's Turn" }
+            if self.board.turn == Color::White {
+                "It's White's Turn"
+            } else {
+                "It's Black's Turn"
+            }
         )
         .size(20)
         .width(Length::Fill)
@@ -124,15 +138,25 @@ impl UI {
             let mut odd_row = Row::new();
             let mut even_row = Row::new();
             for r in 0..4 {
-                let white_container: Container<'_, Message> = container(svg(get_image(self.board[Position::new(r * 2, c * 2)].color, self.board[Position::new(r * 2, c * 2)].piece_type)))
+                let white_container: Container<'_, Message> = container(svg(get_image(
+                    self.board[Position::new(r * 2, c * 2)].color,
+                    self.board[Position::new(r * 2, c * 2)].piece_type,
+                )))
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
-                .style(|_theme: &Theme| container::Style::default().background(color!(0x00E3_C16F)));
+                .style(|_theme: &Theme| {
+                    container::Style::default().background(color!(0x00E3_C16F))
+                });
 
-                let black_container: Container<'_, Message> = container(svg(get_image(self.board[Position::new(r * 2 + 1, c * 2)].color, self.board[Position::new(r * 2 + 1, c * 2)].piece_type)))
+                let black_container: Container<'_, Message> = container(svg(get_image(
+                    self.board[Position::new(r * 2 + 1, c * 2)].color,
+                    self.board[Position::new(r * 2 + 1, c * 2)].piece_type,
+                )))
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
-                .style(|_theme: &Theme| container::Style::default().background(color!(0x00B8_8B4A)));
+                .style(|_theme: &Theme| {
+                    container::Style::default().background(color!(0x00B8_8B4A))
+                });
 
                 odd_row = odd_row.push(white_container);
                 odd_row = odd_row.push(black_container);
@@ -140,15 +164,25 @@ impl UI {
             chess_board = chess_board.push(odd_row);
 
             for r in 0..4 {
-                let black_container: Container<'_, Message> = container(svg(get_image(self.board[Position::new(r * 2 + 1, c * 2)].color, self.board[Position::new(r * 2 + 1, c * 2)].piece_type)))
+                let black_container: Container<'_, Message> = container(svg(get_image(
+                    self.board[Position::new(r * 2, c * 2 + 1)].color,
+                    self.board[Position::new(r * 2, c * 2 + 1)].piece_type,
+                )))
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
-                .style(|_theme: &Theme| container::Style::default().background(color!(0x00B8_8B4A)));
+                .style(|_theme: &Theme| {
+                    container::Style::default().background(color!(0x00B8_8B4A))
+                });
 
-                let white_container: Container<'_, Message> = container(svg(get_image(self.board[Position::new(r * 2 + 1, c * 2)].color, self.board[Position::new(r * 2 + 1, c * 2)].piece_type)))
+                let white_container: Container<'_, Message> = container(svg(get_image(
+                    self.board[Position::new(r * 2 + 1, c * 2 + 1)].color,
+                    self.board[Position::new(r * 2 + 1, c * 2 + 1)].piece_type,
+                )))
                 .width(Length::FillPortion(1))
                 .height(Length::FillPortion(1))
-                .style(|_theme: &Theme| container::Style::default().background(color!(0x00E3_C16F)));
+                .style(|_theme: &Theme| {
+                    container::Style::default().background(color!(0x00E3_C16F))
+                });
 
                 even_row = even_row.push(black_container);
                 even_row = even_row.push(white_container);
@@ -187,7 +221,8 @@ impl UI {
         previous_moves
     }
     pub fn window() -> Settings {
-        let icon: Result<Icon, iced::window::icon::Error> = from_file_data(include_bytes!("BlackKnight.png"), Some(ImageFormat::Png));
+        let icon: Result<Icon, iced::window::icon::Error> =
+            from_file_data(include_bytes!("BlackKnight.png"), Some(ImageFormat::Png));
         Settings {
             size: Size::new(1200.0, 800.0),
             position: iced::window::Position::Default,
@@ -238,7 +273,7 @@ mod images {
                 PieceType::Rook => WHITE_ROOK,
                 PieceType::Queen => WHITE_QUEEN,
                 PieceType::King => WHITE_KING,
-                PieceType::None => panic!("Attempted to get image of PieceType::None"),
+                PieceType::None => &[],
             },
             Color::Black => match piece_type {
                 PieceType::Pawn => BLACK_PAWN,
@@ -247,9 +282,8 @@ mod images {
                 PieceType::Rook => BLACK_ROOK,
                 PieceType::Queen => BLACK_QUEEN,
                 PieceType::King => BLACK_KING,
-                PieceType::None => panic!("Attempted to get image of PieceType::None"),
-            
-            }
+                PieceType::None => &[],
+            },
         })
     }
 }

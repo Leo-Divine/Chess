@@ -20,3 +20,4 @@
     - [x] Fix notations
 - [x] Add Some Text for Player Turn and Game Status
 - [x] Properly Scale Pieces to Different Screen Sizes
+- [x] Fix Piece SVG

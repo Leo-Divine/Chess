@@ -1,4 +1,4 @@
-use crate::piece::{starting_pieces, Piece, PieceType, Position, Color};
+use crate::piece::{starting_pieces, Color, Piece, PieceType, Position};
 use std::ops::{Index, IndexMut};
 
 #[derive(PartialEq)]
@@ -41,8 +41,7 @@ impl Board {
         if moved_piece.piece_type == PieceType::None
             || old_position == new_position
             || self.turn != moved_piece.color
-            || (self.turn == attacked_piece.color
-                && attacked_piece.piece_type != PieceType::None)
+            || (self.turn == attacked_piece.color && attacked_piece.piece_type != PieceType::None)
         {
             return None;
         }
@@ -89,7 +88,8 @@ impl Board {
             color: moved_piece.color,
             has_moved: true,
         };
-        self[moved_piece.position] = Piece::new(PieceType::None, moved_piece.position, Color::White);
+        self[moved_piece.position] =
+            Piece::new(PieceType::None, moved_piece.position, Color::White);
     }
     ///Sets the board back to the last move.
     fn undo_move(&mut self) {
@@ -97,8 +97,10 @@ impl Board {
     }
     ///Verifies if a given piece can move to the given position acording to it's movement options.
     fn is_move_valid(&mut self, moved_piece: Piece, attacked_piece: Piece) -> MoveValidity {
-        let x_move: i8 = (attacked_piece.position.x as i8) - (moved_piece.position.x as i8);
-        let y_move: i8 = (attacked_piece.position.y as i8) - (moved_piece.position.y as i8);
+        let x_move: i8 = i8::try_from(attacked_piece.position.x).ok().unwrap()
+            - i8::try_from(moved_piece.position.x).ok().unwrap();
+        let y_move: i8 = i8::try_from(attacked_piece.position.y).ok().unwrap()
+            - i8::try_from(moved_piece.position.y).ok().unwrap();
         let x_abs: i8 = x_move.abs();
         let y_abs: i8 = y_move.abs();
 
@@ -113,10 +115,17 @@ impl Board {
                     && (x_move == -1 || x_move == 1)
                     && attacked_piece.piece_type != PieceType::None)
             {
-                if self.is_jumping_vertically(moved_piece, y_move) { return MoveValidity::Invalid }                return MoveValidity::Valid
+                if self.is_jumping_vertically(moved_piece, y_move) {
+                    return MoveValidity::Invalid;
+                }
+                return MoveValidity::Valid;
             } else if self.last_piece_moved.piece_type == PieceType::Pawn
                 && self.last_piece_moved.position.y == 3
-                && x_abs == 1 && y_move == -1 && self.last_piece_moved.position == Position::new(attacked_piece.position.x, attacked_piece.position.y + 1) {
+                && x_abs == 1
+                && y_move == -1
+                && self.last_piece_moved.position
+                    == Position::new(attacked_piece.position.x, attacked_piece.position.y + 1)
+            {
                 self[Position::new(attacked_piece.position.x, 3)] = Piece::new(
                     PieceType::None,
                     Position::new(attacked_piece.position.x, 3),
@@ -143,7 +152,10 @@ impl Board {
                     && (x_move == -1 || x_move == 1)
                     && attacked_piece.piece_type != PieceType::None)
             {
-                if self.is_jumping_vertically(moved_piece, y_move) { return MoveValidity::Invalid }                return MoveValidity::Valid
+                if self.is_jumping_vertically(moved_piece, y_move) {
+                    return MoveValidity::Invalid;
+                }
+                return MoveValidity::Valid;
             } else if self.last_piece_moved.piece_type == PieceType::Pawn
                 && self.last_piece_moved.position.y == 4
                 && x_abs == 1
@@ -171,9 +183,15 @@ impl Board {
         //ROOK
         if moved_piece.piece_type == PieceType::Rook {
             if moved_piece.position.x == attacked_piece.position.x {
-                if self.is_jumping_vertically(moved_piece, y_move) { return MoveValidity::Invalid }                return MoveValidity::Valid
+                if self.is_jumping_vertically(moved_piece, y_move) {
+                    return MoveValidity::Invalid;
+                }
+                return MoveValidity::Valid;
             } else if moved_piece.position.y == attacked_piece.position.y {
-                if self.is_jumping_horizontally(moved_piece, x_move) { return MoveValidity::Invalid }                return MoveValidity::Valid
+                if self.is_jumping_horizontally(moved_piece, x_move) {
+                    return MoveValidity::Invalid;
+                }
+                return MoveValidity::Valid;
             }
         }
         //KNIGHT
@@ -185,21 +203,39 @@ impl Board {
         //BISHOP
         if moved_piece.piece_type == PieceType::Bishop {
             if (x_move + y_move) == 0i8 {
-                if self.is_jumping_diagonally_pos(moved_piece, x_move) { return MoveValidity::Invalid }                return MoveValidity::Valid
+                if self.is_jumping_diagonally_pos(moved_piece, x_move) {
+                    return MoveValidity::Invalid;
+                }
+                return MoveValidity::Valid;
             } else if (x_move - y_move) == 0i8 {
-                if self.is_jumping_diagonally_neg(moved_piece, x_move) { return MoveValidity::Invalid }                return MoveValidity::Valid
+                if self.is_jumping_diagonally_neg(moved_piece, x_move) {
+                    return MoveValidity::Invalid;
+                }
+                return MoveValidity::Valid;
             }
         }
         //QUEEN
         if moved_piece.piece_type == PieceType::Queen {
             if moved_piece.position.x == attacked_piece.position.x {
-                if self.is_jumping_vertically(moved_piece, y_move) { return MoveValidity::Invalid }                return MoveValidity::Valid
+                if self.is_jumping_vertically(moved_piece, y_move) {
+                    return MoveValidity::Invalid;
+                }
+                return MoveValidity::Valid;
             } else if moved_piece.position.y == attacked_piece.position.y {
-                if self.is_jumping_horizontally(moved_piece, x_move) { return MoveValidity::Invalid }                return MoveValidity::Valid
+                if self.is_jumping_horizontally(moved_piece, x_move) {
+                    return MoveValidity::Invalid;
+                }
+                return MoveValidity::Valid;
             } else if (x_move + y_move) == 0i8 {
-                if self.is_jumping_diagonally_pos(moved_piece, x_move) { return MoveValidity::Invalid }                return MoveValidity::Valid
+                if self.is_jumping_diagonally_pos(moved_piece, x_move) {
+                    return MoveValidity::Invalid;
+                }
+                return MoveValidity::Valid;
             } else if (x_move - y_move) == 0i8 {
-                if self.is_jumping_diagonally_neg(moved_piece, x_move) { return MoveValidity::Invalid }                return MoveValidity::Valid
+                if self.is_jumping_diagonally_neg(moved_piece, x_move) {
+                    return MoveValidity::Invalid;
+                }
+                return MoveValidity::Valid;
             }
         }
         //WHITE KING
@@ -217,7 +253,10 @@ impl Board {
                 && !self.is_jumping_horizontally(moved_piece, x_move)
                 && !self.in_check(Color::White)
             {
-                if self.short_castling_checks(true) { return MoveValidity::Invalid }                return MoveValidity::ShortCastle
+                if self.short_castling_checks(true) {
+                    return MoveValidity::Invalid;
+                }
+                return MoveValidity::ShortCastle;
             } else if x_move == -3
                 && y_move == 0
                 && !moved_piece.has_moved
@@ -226,7 +265,10 @@ impl Board {
                 && !self.is_jumping_horizontally(moved_piece, x_move)
                 && !self.in_check(Color::White)
             {
-                if self.long_castling_checks(true) { return MoveValidity::Invalid }                return MoveValidity::LongCastle
+                if self.long_castling_checks(true) {
+                    return MoveValidity::Invalid;
+                }
+                return MoveValidity::LongCastle;
             }
         }
         //BLACK KING
@@ -244,7 +286,10 @@ impl Board {
                 && !self.is_jumping_horizontally(moved_piece, x_move)
                 && !self.in_check(Color::Black)
             {
-                if self.short_castling_checks(false) { return MoveValidity::Invalid }                return MoveValidity::ShortCastle
+                if self.short_castling_checks(false) {
+                    return MoveValidity::Invalid;
+                }
+                return MoveValidity::ShortCastle;
             } else if x_move == -3
                 && y_move == 0
                 && !moved_piece.has_moved
@@ -253,7 +298,10 @@ impl Board {
                 && !self.is_jumping_horizontally(moved_piece, x_move)
                 && !self.in_check(Color::Black)
             {
-                if self.long_castling_checks(false) { return MoveValidity::Invalid }                return MoveValidity::LongCastle
+                if self.long_castling_checks(false) {
+                    return MoveValidity::Invalid;
+                }
+                return MoveValidity::LongCastle;
             }
         }
         MoveValidity::Invalid
@@ -338,7 +386,7 @@ impl Board {
     fn is_jumping_horizontally(&self, piece: Piece, x_move: i8) -> bool {
         for i in 1..x_move {
             let mut position: Position = piece.position;
-            position.x = (position.x as i8 + i) as u8;
+            position.x = (i8::try_from(position.x).ok().unwrap() + i) as u8;
             if self[position].piece_type != PieceType::None {
                 return true;
             }
@@ -348,7 +396,7 @@ impl Board {
                 continue;
             }
             let mut position: Position = piece.position;
-            position.x = (position.x as i8 + i) as u8;
+            position.x = (i8::try_from(position.x).ok().unwrap() + i) as u8;
             if self[position].piece_type != PieceType::None {
                 return true;
             }
@@ -359,7 +407,7 @@ impl Board {
     fn is_jumping_vertically(&self, piece: Piece, y_move: i8) -> bool {
         for i in 1..y_move {
             let mut position: Position = piece.position;
-            position.y = (position.y as i8 + i) as u8;
+            position.y = (i8::try_from(position.y).ok().unwrap() + i) as u8;
             if self[position].piece_type != PieceType::None {
                 return true;
             }
@@ -369,7 +417,7 @@ impl Board {
                 continue;
             }
             let mut position: Position = piece.position;
-            position.y = (position.y as i8 + i) as u8;
+            position.y = (i8::try_from(position.y).ok().unwrap() + i) as u8;
             if self[position].piece_type != PieceType::None {
                 return true;
             }
@@ -380,8 +428,8 @@ impl Board {
     fn is_jumping_diagonally_pos(&self, piece: Piece, x_move: i8) -> bool {
         for i in 1..x_move {
             let mut position: Position = piece.position;
-            position.x = (position.x as i8 + i) as u8;
-            position.y = (position.y as i8 - i) as u8;
+            position.x = (i8::try_from(position.x).ok().unwrap() + i) as u8;
+            position.y = (i8::try_from(position.y).ok().unwrap() - i) as u8;
             if self[position].piece_type != PieceType::None {
                 return true;
             }
@@ -391,8 +439,8 @@ impl Board {
                 continue;
             }
             let mut position: Position = piece.position;
-            position.x = (position.x as i8 + i) as u8;
-            position.y = (position.y as i8 - i) as u8;
+            position.x = (i8::try_from(position.x).ok().unwrap() + i) as u8;
+            position.y = (i8::try_from(position.y).ok().unwrap() - i) as u8;
             if self[position].piece_type != PieceType::None {
                 return true;
             }
@@ -403,8 +451,8 @@ impl Board {
     fn is_jumping_diagonally_neg(&self, piece: Piece, x_move: i8) -> bool {
         for i in 1..x_move {
             let mut position: Position = piece.position;
-            position.x = (position.x as i8 + i) as u8;
-            position.y = (position.y as i8 + i) as u8;
+            position.x = (i8::try_from(position.x).ok().unwrap() + i) as u8;
+            position.y = (i8::try_from(position.y).ok().unwrap() + i) as u8;
             if self[position].piece_type != PieceType::None {
                 return true;
             }
@@ -414,8 +462,8 @@ impl Board {
                 continue;
             }
             let mut position: Position = piece.position;
-            position.x = (position.x as i8 + i) as u8;
-            position.y = (position.y as i8 + i) as u8;
+            position.x = (i8::try_from(position.x).ok().unwrap() + i) as u8;
+            position.y = (i8::try_from(position.y).ok().unwrap() + i) as u8;
             if self[position].piece_type != PieceType::None {
                 return true;
             }
