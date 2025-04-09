@@ -13,12 +13,12 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
-            binary_name: myapp
-            output_name: myapp-linux-x86_64
+            binary_name: chess_game
+            output_name: chess_game-linux-x86_64
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            binary_name: myapp.exe
-            output_name: myapp-windows-x86_64.exe
+            binary_name: chess_game.exe
+            output_name: chess_game-windows-x86_64.exe
 
     steps:
       - uses: actions/checkout@v4
