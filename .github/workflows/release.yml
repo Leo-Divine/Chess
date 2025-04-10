@@ -60,7 +60,7 @@ jobs:
           path: dist/${{ matrix.output_name }}
 
   release:
-    permissions: write
+    permissions: write-all
     name: Upload Release Assets
     runs-on: ubuntu-latest
     needs: build
