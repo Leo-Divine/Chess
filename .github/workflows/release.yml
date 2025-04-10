@@ -17,7 +17,7 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             binary_name: chess_game.exe
-            output_name: chess_game-windows-x86_64.ex
+            output_name: chess_game-windows-x86_64.exe
 
     steps:
       - uses: actions/checkout@v4
